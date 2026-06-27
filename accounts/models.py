@@ -81,7 +81,8 @@ class Role(models.Model):
     invoices_invoices_invoices_download = models.BooleanField(default=False, verbose_name="Rechnung herunterladen", help_text="Benutzer darf Rechnungen herunterladen.")
     invoices_invoices_invoices_cancel = models.BooleanField(default=False, verbose_name="Rechnung stornieren", help_text="Benutzer darf Rechnungen stornieren.")
     invoices_invoices_invoices_paid = models.BooleanField(default=False, verbose_name="Rechnung auf bezahlt setzen", help_text="Benutzer darf Rechnungsstatus ändern.")
-    
+    invoices_invoices_invoices_delete = models.BooleanField(default=False, verbose_name="Rechnungen löschen", help_text="Benutzer darf Rechnungen löschen.")
+    invoices_invoices_invoices_overdue = models.BooleanField(default=False, verbose_name="Überfällige Rechnungen anzeigen", help_text="Benutzer darf überfällige Rechnungen einsehen.")
 
     invoices_offers_view = models.BooleanField(default=False, verbose_name="Angebote anzeigen", help_text="Benutzer darf Angebote sehen.")
     invoices_offers_add = models.BooleanField(default=False, verbose_name="Angebot erstellen", help_text="Benutzer darf Angebote für Kunden erstellen.")
@@ -91,9 +92,16 @@ class Role(models.Model):
     invoices_offers_offers_preview = models.BooleanField(default=False, verbose_name="Angebotsvorschau anzeigen", help_text="Benutzer darf Vorschauen öffnen.")
     invoices_offers_offers_download = models.BooleanField(default=False, verbose_name="Angebot herunterladen", help_text="Benutzer darf Angebote herunterladen.")
     invoices_offers_offers_status = models.BooleanField(default=False, verbose_name="Angebotsstatus bearbeiten", help_text="Benutzer darf Angebotsstatus ändern.")
+    invoices_offers_offers_delete = models.BooleanField(default=False, verbose_name="Angebote löschen", help_text="Benutzer darf Angebote löschen.")
     
-    
-
+    invoices_reminders_view = models.BooleanField(default=False, verbose_name="Mahnungen anzeigen", help_text="Benutzer darf Mahnungen einsehen.")
+    invoices_reminders_add = models.BooleanField(default=False, verbose_name="Mahnungen hinzufügen", help_text="Benutzer darf Mahnungen erstellen.")
+    invoices_reminders_reminders_view = models.BooleanField(default=False, verbose_name="Erinnerungen anzeigen", help_text="Benutzer darf Zahlungserinnerungen einsehen.")
+    invoices_reminders_reminders_cancel = models.BooleanField(default=False, verbose_name="Erinnerungen stornieren", help_text="Benutzer darf Zahlungserinnerungen stornieren.")
+    invoices_reminders_reminders_delete = models.BooleanField(default=False, verbose_name="Erinnerungen löschen", help_text="Benutzer darf Zahlungserinnerungen löschen.")
+    invoices_reminders_reminders_download = models.BooleanField(default=False, verbose_name="Erinnerungen herunterladen", help_text="Benutzer darf Zahlungserinnerungen herunterladen.")
+    invoices_reminders_reminders_paid = models.BooleanField(default=False, verbose_name="Erinnerungen als bezahlt markieren", help_text="Benutzer darf Zahlungserinnerungen als bezahlt markieren.")
+    invoices_reminders_reminders_expire = models.BooleanField(default=False, verbose_name="Erinnerungen ablaufen lassen", help_text="Benutzer darf Zahlungserinnerungen als abgelaufen markieren.")
 
     # =====================
     # Benutzerverwaltung
@@ -115,9 +123,9 @@ class Role(models.Model):
     settings_view = models.BooleanField(default=False, verbose_name="Einstellungsübersicht anzeigen", help_text="Benutzer darf Einstellungskategorien sehen.")
     settings_detail_view = models.BooleanField(default=False, verbose_name="Einstellungen anzeigen", help_text="Benutzer darf Systemeinstellungen sehen.")
     settings_add = models.BooleanField(default=False, verbose_name="Einstellungen erstellen", help_text="Benutzer darf neue Einstellungen hinzufügen.")
-    #settings_edit = models.BooleanField(default=False, verbose_name="Einstellungen bearbeiten", help_text="Benutzer darf Einstellungen ändern.")
     settings_delete = models.BooleanField(default=False, verbose_name="Einstellungen löschen", help_text="Benutzer darf Einstellungen entfernen.")
-
+    settings_update_check = models.BooleanField(default=False, verbose_name="Updates prüfen", help_text="Benutzer darf nach Updates suchen.")
+    settings_update_apply = models.BooleanField(default=False, verbose_name="Updates installieren", help_text="Benutzer darf Updates installieren.")
 
     # =====================
     # Zeiterfassung
