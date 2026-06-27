@@ -1,0 +1,29 @@
+<form
+    id="save-form-{{ record.id }}"
+    method="post"
+    action="{% url 'inventory:edit' project.id record.id %}">
+    
+    {% csrf_token %}
+
+    <input
+        type="hidden"
+        name="item_id"
+        value="{{ record.id }}"
+        form="save-form-{{ record.id }}">
+
+    <button
+        type="submit"
+        form="save-form-{{ record.id }}"
+        class="btn btn-save">
+        Speichern
+    </button>
+
+    <button
+        type="submit"
+        form="save-form-{{ record.id }}"
+        formaction="{% url 'inventory:delete' project.id record.id %}"
+        class="btn btn-delete">
+        Löschen
+    </button>
+
+</form>

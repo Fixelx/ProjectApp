@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block title %}
+{{ project.name }} - Zeiterfassung
+{% endblock %}
+
+{% block header_title %}
+Zeiterfassung
+{% endblock %}
+
+{% block header_description %}
+Zeiten erfassen und verwalten
+{% endblock %}
+
+{% block content %}
+{% load django_tables2 %}
+
+<div class="mb-8">
+    <div class="p-6 rounded-xl shadow bg-white dark:bg-slate-800 text-slate-900 dark:text-white transition-colors">
+        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+            <div>
+                <h2 class="text-xl font-bold">
+                    Aktionen
+                </h2>
+
+                <p class="text-slate-400 text-sm mt-1">
+                    Arbeitszeiten und Anfahrten erfassen
+                </p>
+            </div>
+
+            <div class="flex flex-col sm:flex-row gap-2">
+
+                <!-- START -->
+                <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="start">
+                    <button class="btn btn-action-start">
+                        ▶ Start
+                    </button>
+                </form>
+
+                <!-- STOP -->
+                <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="stop">
+                    <button class="btn btn-action-stop">
+                        ■ Stop
+                    </button>
+                </form>
+
+            </div>
+
+        </div>
+
+    </div>
+</div>
+
+<div class="p-6 rounded-xl shadow bg-white dark:bg-slate-800 text-slate-900 dark:text-white transition-colors">
+
+    <div class="mb-6">
+
+        <h2 class="text-xl font-bold">
+            Zeiterfassungen
+        </h2>
+
+        <p class="text-slate-400 text-sm mt-1">
+            Erfasste Zeiten des Projekts
+        </p>
+
+    </div>
+
+    <div class="overflow-x-auto rounded-xl">
+        {% render_table table %}
+    </div>
+
+</div>
+
+{% endblock %}

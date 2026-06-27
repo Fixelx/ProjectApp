@@ -1,0 +1,35 @@
+<form
+    id="save-form-{{ record.id }}"
+    method="post"
+    action="{% url 'invoices:items_edit' record.id %}">
+
+    {% csrf_token %}
+
+</form>
+
+
+<div class="flex gap-2">
+
+    <button
+        type="submit"
+        form="save-form-{{ record.id }}"
+        class="btn btn-save">
+        Speichern
+    </button>
+
+
+    <form
+        method="post"
+        action="{% url 'invoices:items_delete' record.id %}">
+
+        {% csrf_token %}
+
+        <button
+            type="submit"
+            class="btn btn-delete">
+            Löschen
+        </button>
+
+    </form>
+
+</div>

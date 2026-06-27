@@ -1,0 +1,206 @@
+{% extends "base.html" %}
+
+{% block title %}
+{{ project.name }} - Finanzen
+{% endblock %}
+
+{% block header_title %}
+Finanzen
+{% endblock %}
+
+{% block header_description %}
+Einnahmen & Ausgaben
+{% endblock %}
+
+
+{% block content %}
+{% load django_tables2 %}
+
+<div class="mb-8">
+    <div class="p-6 rounded-xl shadow bg-white dark:bg-slate-800 text-slate-900 dark:text-white transition-colors">
+        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+            <div>
+                <h2 class="text-xl font-bold">Aktionen</h2>
+                <p class="text-slate-400 text-sm mt-1">Einnahmen und Ausgaben tracken</p>
+            </div>
+
+            <div class="flex flex-col sm:flex-row gap-2">
+                <a href="{% url 'finance:add_income' project.id %}" class="btn btn-action-start">+ Einnahme</a>
+                <a href="{% url 'finance:add_expense' project.id %}" class="btn btn-action-stop">+ Ausgabe</a>
+            </div>
+            
+        </div>
+    </div>
+</div>
+
+<div class="space-y-2 mb-8">
+    <!-- ===================== -->
+    <!-- FILTER CARD -->
+    <!-- ===================== -->
+    <div class="p-6 rounded-xl shadow bg-white dark:bg-slate-800 text-slate-900 dark:text-white transition-colors">
+
+        <div class="mb-6">
+            <h2 class="text-xl font-bold">Filter</h2>
+            <p class="text-slate-400 text-sm mt-1">Zeitraum für aktuelle Auswertung</p>
+        </div>
+
+        <form method="get" class="flex flex-wrap gap-4 items-end">
+
+            <div>
+                <label class="text-sm text-slate-400">Start</label>
+                <input type="date" name="start"
+                       value="{{ request.GET.start|default_if_none:'' }}"
+                       class="border rounded px-3 py-2">
+            </div>
+
+            <div>
+                <label class="text-sm text-slate-400">Ende</label>
+                <input type="date" name="end"
+                       value="{{ request.GET.end|default_if_none:'' }}"
+                       class="border rounded px-3 py-2">
+            </div>
+
+            <button class="btn btn-save">
+                Anwenden
+            </button>
+
+        </form>
+
+    </div>
+
+
+    <!-- ===================== -->
+    <!-- KPI FLOATING CARDS -->
+    <!-- ===================== -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
+
+        <div class="p-6 rounded-xl shadow bg-white dark:bg-slate-800 text-slate-900 dark:text-white transition-colors">
+            <p class="text-slate-400 text-sm mt-1">Einnahmen</p>
+            <p class="text-3xl font-bold text-green-600 mt-1">
+                {{ total_income }} €
+            </p>
+        </div>
+
+        <div class="p-6 rounded-xl shadow bg-white dark:bg-slate-800 text-slate-900 dark:text-white transition-colors">
+            <p class="text-slate-400 text-sm mt-1">Ausgaben</p>
+            <p class="text-3xl font-bold text-red-600 mt-1">
+                {{ total_expense }} €
+            </p>
+        </div>
+
+        <div class="p-6 rounded-xl shadow bg-white dark:bg-slate-800 text-slate-900 dark:text-white transition-colors">
+            <p class="text-slate-400 text-sm mt-1">Gewinn</p>
+            <p class="text-3xl font-bold text-blue-600 mt-1">
+                {{ total_profit }} €
+            </p>
+        </div>
+
+    </div>
+
+
+    <!-- ===================== -->
+    <!-- LIST CARDS -->
+    <!-- ===================== -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+
+        <!-- INCOME -->
+        <div class="p-6 rounded-xl shadow bg-white dark:bg-slate-800 text-slate-900 dark:text-white transition-colors">
+
+            <div class="p-4">
+                <h3 class="font-semibold text-green-600">Einnahmen</h3>
+            </div>
+
+            <div class="divide-y">
+
+                {% for i in incomes %}
+                <div class="p-4 flex justify-between">
+                    <div>
+                        <p class="font-medium text-green-600">+{{ i.amount }} € {{ i.name }}</p>
+                        <p class="text-slate-400 text-sm mt-1">{{ i.date|date:"d.m.Y" }} · {{ i.category }}</p>
+                    </div>
+                </div>
+                {% empty %}
+                <p class="p-4 text-slate-400">Keine Einnahmen</p>
+                {% endfor %}
+
+            </div>
+
+        </div>
+
+
+        <!-- EXPENSE -->
+        <div class="p-6 rounded-xl shadow bg-white dark:bg-slate-800 text-slate-900 dark:text-white transition-colors">
+
+            <div class="p-4">
+                <h3 class="font-semibold text-red-600">Ausgaben</h3>
+            </div>
+
+            <div class="divide-y">
+
+                {% for e in expenses %}
+                <div class="p-4 flex justify-between">
+                    <div>
+                        <p class="font-medium text-red-600">-{{ e.amount }} € {{ e.name }}</p>
+                        <p class="text-slate-400 text-sm mt-1">{{ e.date|date:"d.m.Y" }} · {{ e.category }}</p>
+                    </div>
+                </div>
+                {% empty %}
+                <p class="p-4 text-slate-400">Keine Ausgaben</p>
+                {% endfor %}
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<div class="p-6 rounded-xl shadow bg-white dark:bg-slate-800 text-slate-900 dark:text-white transition-colors">
+
+    <div class="mb-6">
+        <h2 class="text-xl font-bold">
+            Zeitraum-Analyse
+        </h2>
+
+        <p class="text-slate-400 text-sm mt-1">
+            Aggregierte Auswertung nach Zeitraum
+        </p>
+    </div>
+
+
+    <div class="flex gap-2 mb-6">
+
+        <a href="?period=year"
+           class="px-3 py-1 rounded border {% if period == 'year' %}bg-slate-900 text-white{% endif %}">
+            Jahr
+        </a>
+
+        <a href="?period=month"
+           class="px-3 py-1 rounded border {% if period == 'month' %}bg-slate-900 text-white{% endif %}">
+            Monat
+        </a>
+
+        <a href="?period=week"
+           class="px-3 py-1 rounded border {% if period == 'week' %}bg-slate-900 text-white{% endif %}">
+            Woche
+        </a>
+
+        <a href="?period=day"
+           class="px-3 py-1 rounded border {% if period == 'day' %}bg-slate-900 text-white{% endif %}">
+            Tag
+        </a>
+
+    </div>
+
+
+    <div class="overflow-x-auto rounded-xl">
+
+        {% render_table table %}
+
+    </div>
+
+</div>
+
+{% endblock %}

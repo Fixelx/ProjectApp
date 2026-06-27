@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block title %}Rechnungswesen - Mahnungen{% endblock %}
+
+{% block header_title %}
+Mahnung erstellen
+{% endblock %}
+
+{% block header_description %}
+Mahnung für einen Kunden erstellen
+{% endblock %}
+
+{% block content %}
+
+
+
+<div class="p-6 rounded-xl shadow bg-white dark:bg-slate-800 text-slate-900 dark:text-white transition-colors">
+
+    <form method="post" enctype="multipart/form-data" class="space-y-4">
+        {% csrf_token %}
+
+        {{ form.as_p }}
+
+        <button class="btn btn-save">
+            Speichern
+        </button>
+
+    </form>
+
+</div>
+{% endblock %}

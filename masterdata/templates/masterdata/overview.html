@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block title %}
+Einstellungen
+{% endblock %}
+
+
+{% block header_title %}
+Einstellungen
+{% endblock %}
+
+{% block header_description %}
+Einstellungen der App und Module bearbeiten
+{% endblock %}
+
+
+{% block content %}
+{% for group, entries in groups.items %}
+
+
+
+<div class="p-6 rounded-xl shadow bg-white dark:bg-slate-800 text-slate-900 dark:text-white transition-colors mb-8">
+
+    <div class="mb-6">
+        <h2 class="text-xl font-bold">
+            {{ group }}
+        </h2>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+
+
+        {% for entry in entries %}
+
+        <a 
+            href="{% url 'masterdata:detail' entry.model_name %}"
+            class="bg-slate-100 dark:bg-slate-700 rounded-xl p-6"
+        >   
+                <h2 class="text-xl font-bold">
+            {{ entry.name }}
+        </h2>
+        <p class="text-sm mt-2">
+             {% if entry.type == "single" %}
+                            Einzelne Einstellung
+                        {% else %}
+                            Verwaltung
+                        {% endif %}
+        </p>
+        </a>
+
+        {% endfor %}
+
+
+    </div>
+
+</div>
+
+{% endfor %}
+{% endblock %}

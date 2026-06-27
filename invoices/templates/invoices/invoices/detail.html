@@ -1,0 +1,239 @@
+{% extends "base.html" %}
+
+{% block title %}Rechnungswesen - Rechnungen{% endblock %}
+
+{% block header_title %}
+Rechnung {{ invoice.invoice_number }}
+{% endblock %}
+
+{% block header_description %}
+Details & Positionen
+{% endblock %}
+
+{% block content %}
+{% load django_tables2 %}
+<div class="mb-8">
+    <div class="p-6 rounded-xl shadow bg-white dark:bg-slate-800 text-slate-900 dark:text-white transition-colors">
+        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+            <div>
+                <h2 class="text-xl font-bold">Aktionen</h2>
+                <p class="text-slate-400 text-sm mt-1">
+                    Positionen zur Rechnung hinzufügen
+                </p>
+            </div>
+            <div class="flex flex-col sm:flex-row gap-2">
+                {% if invoice.status == "draft" %}
+                    <a href="{% url 'invoices:invoice_item_add' invoice.id %}" class="btn btn-add">+ Position</a>
+                    <a href="{% url 'invoices:invoices_preview' invoice.id %}" class="btn btn-action">Vorschau</a>
+                    <a href="{% url 'invoices:invoices_download' invoice.id %}" onclick="startDownloadAndRedirect()" class="btn btn-action">Download</a>
+                    <a href="{% url 'invoices:invoices_delete' invoice.id %}" class="btn btn-delete">Löschen</a>
+                {% endif %}
+                {% if invoice.status == "sent" %}
+                    <a href="{% url 'invoices:invoices_download' invoice.id %}" class="btn btn-action">Download</a>
+                    <a href="{% url 'invoices:invoices_cancel' invoice.id %}" onclick="startDownloadAndRedirect()" class="btn btn-delete">Stornieren</a>
+                    <a href="{% url 'invoices:invoices_paid' invoice.id %}" class="btn btn-action">Zahlung verbuchen</a>
+                    <a href="{% url 'invoices:invoices_overdue' invoice.id %}" class="btn btn-action">Überfällig</a>
+                {% endif %}
+                {% if invoice.status == "paid" %}
+                    <a href="{% url 'invoices:invoices_download' invoice.id %}" class="btn btn-action">Download</a>
+                    <a href="{% url 'invoices:invoices_cancel' invoice.id %}" onclick="startDownloadAndRedirect()"  class="btn btn-delete">Stornieren</a>
+                {% endif %}
+                {% if invoice.status == "canceled" %}
+                    <a href="{% url 'invoices:invoices_download' invoice.id %}" class="btn btn-action">Download</a>
+                    <a href="{% url 'invoices:invoices_cancel' invoice.id %}" class="btn btn-action">Stornorechnung</a>
+                {% endif %}
+                {% if invoice.status == "overdue" %}
+                    <a href="{% url 'invoices:invoices_download' invoice.id %}" class="btn btn-action">Download</a>
+                {% endif %}
+            </div>
+            
+        </div>
+    </div>
+</div>
+
+{% if reminders %}
+<div class="mb-8 p-6 border border-orange-500  rounded-xl shadow bg-white dark:bg-slate-800 text-slate-900 dark:text-white transition-colors">
+
+    <h2 class="text-xl font-bold mb-6 text-orange-500">Mahnungen</h2>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {% for reminder in reminders %}
+        {% if reminder.status != "canceled" %}
+        <div class="bg-slate-100 dark:bg-slate-700 rounded-xl p-6">
+
+            <div class="flex justify-between items-start">
+
+                <div>
+                    <a href="{% url 'invoices:reminders_detail' reminder.id %}" class="company_link">
+                        {{ reminder.reminder_number }}
+                    </a>
+
+                    <p class="text-sm text-slate-500 dark:text-slate-300 mt-1">
+                        Mahnstufe {{ reminder.level }}
+                        · {{ reminder.issue_date|date:"d.m.Y" }}
+                    </p>
+                </div>
+
+
+                <span class="px-3 py-1 rounded-full text-xs font-medium bg-slate-200 text-slate-700 dark:bg-slate-600 dark:text-slate-200">
+                    {{ reminder.get_status_display }}
+                </span>
+
+            </div>
+
+
+            <div class="mt-4 text-sm text-slate-600 dark:text-slate-300">
+
+                {% if reminder.due_date %}
+                    <p>
+                        Neue Zahlungsfrist:
+                        <span class="font-medium">
+                            {{ reminder.due_date|date:"d.m.Y" }}
+                        </span>
+                    </p>
+                {% endif %}
+
+
+                {% if reminder.fee %}
+                    <p>
+                        Mahngebühr:
+                        <span class="font-medium">
+                            {{ reminder.fee|floatformat:2 }} €
+                        </span>
+                    </p>
+                {% endif %}
+
+            </div>
+
+        </div>
+        {% endif %}
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<!-- HEADER INFO -->
+<div class="mb-8 p-6 rounded-xl shadow bg-white dark:bg-slate-800 text-slate-900 dark:text-white transition-colors">
+
+    <h2 class="text-xl font-bold mb-6">Allgemein</h2>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+
+        <!-- Kunde -->
+        <div>
+            <div class="text-slate-400 text-sm">Kunde</div>
+            <div class="font-semibold">{{ invoice.customer.company_name }}</div>
+        </div>
+
+        <!-- Projekt -->
+        <div>
+            <div class="text-slate-400 text-sm">Projekt</div>
+            <div class="font-semibold">
+                {% if invoice.project %}
+                    {{ invoice.project.name }}
+                {% else %}
+                    -
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Status -->
+        <div>
+            <div class="text-slate-400 text-sm">Status</div>
+            <div class="font-semibold">{{ invoice.get_status_display }}</div>
+        </div>
+
+        <!-- Datum -->
+        <div>
+            <div class="text-slate-400 text-sm">Rechnungsdatum</div>
+            <div class="font-semibold">{{ invoice.issue_date|date:"d.m.Y" }}</div>
+        </div>
+
+        <div>
+            <div class="text-slate-400 text-sm">Fälligkeitsdatum</div>
+            <div class="font-semibold">{{ invoice.due_date|date:"d.m.Y" }}</div>
+        </div>
+    </div>
+</div>
+
+
+<!-- SNAPSHOT: KONTAKT & ADRESSE -->
+<div class="mb-8 p-6 rounded-xl shadow bg-white dark:bg-slate-800 text-slate-900 dark:text-white transition-colors">
+
+    <h2 class="text-xl font-bold mb-6">Rechnungsadresse</h2>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+
+        <!-- Kontakt -->
+        <div>
+            <div class="text-slate-400 text-sm">Ansprechpartner</div>
+            <div class="font-semibold">{{ invoice.contact_name|default:"-" }}</div>
+
+            {% if invoice.contact_email %}
+                <div class="text-slate-400 text-sm">{{ invoice.contact_email }}</div>
+            {% endif %}
+
+            {% if invoice.contact_phone %}
+                <div class="text-slate-400 text-sm">{{ invoice.contact_phone }}</div>
+            {% endif %}
+        </div>
+
+        <!-- Adresse -->
+        <div>
+            <div class="text-slate-400 text-sm">Standort</div>
+
+            <div class="font-semibold">
+                {{ invoice.location_name|default:"-" }}
+            </div>
+
+            <div class="text-slate-400 text-sm">
+                {{ invoice.location_street }}
+            </div>
+
+            <div class="text-slate-400 text-sm">
+                {{ invoice.location_zip }} {{ invoice.location_city }}
+            </div>
+
+            <div class="text-slate-400 text-sm">
+                {{ invoice.location_country }}
+            </div>
+        </div>
+
+    </div>
+</div>
+
+
+<div class="mb-8 p-6 rounded-xl shadow bg-white dark:bg-slate-800 text-slate-900 dark:text-white transition-colors">
+    <h2 class="text-xl font-bold mb-6">Rechnungshinweis</h2>
+    <div class="grid grid-cols-1 gap-6">
+        <div>
+            <div class="font-semibold">{{ invoice.note|default:"-" }}</div>
+        </div>
+    </div>
+</div>
+
+
+<!-- POSITIONEN -->
+<div class="p-6 rounded-xl shadow bg-white dark:bg-slate-800 text-slate-900 dark:text-white transition-colors">
+
+    <h2 class="text-xl font-bold mb-6">Positionen</h2>
+
+    <div class="overflow-x-auto rounded-xl">
+        {% render_table table %}
+
+    </div>
+
+
+    <div class="mt-4 text-right font-bold">
+        Gesamt: {{ total_net|floatformat:2 }} €
+    </div>
+
+</div>
+<script>
+function startDownloadAndRedirect() {
+    setTimeout(function() {
+        window.location.href = "{% url 'invoices:invoices_detail' invoice.id %}";
+    }, 1000);
+}
+</script>
+{% endblock %}

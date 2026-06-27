@@ -1,0 +1,10 @@
+{% if record.available_quantity > 0 %}
+    <span class="text-green-600 font-semibold">
+        {{ record.available_quantity }}
+    </span>
+{% elif record.available_quantity == 0 %}
+    <span class="text-orange-600 font-semibold">
+        0
+    </span>
+{% endif %}
+/ {{ record.quantity }}

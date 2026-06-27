@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+
+{% block title %}Rechnungswesen - Angebote{% endblock %}
+
+{% block header_title %}
+Angebot {{ offer.offer_number }}
+{% endblock %}
+
+{% block header_description %}
+Details & Positionen
+{% endblock %}
+
+{% block content %}
+{% load django_tables2 %}
+<div class="mb-8">
+    <div class="p-6 rounded-xl shadow bg-white dark:bg-slate-800 text-slate-900 dark:text-white transition-colors">
+        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+            <div>
+                <h2 class="text-xl font-bold">Aktionen</h2>
+                <p class="text-slate-400 text-sm mt-1">
+                    Positionen zum Angebot hinzufügen
+                </p>
+            </div>
+            <div class="flex flex-col sm:flex-row gap-2">
+                {% if offer.status == "draft" %}
+                    <a href="{% url 'invoices:offers_item_add' offer.id %}" class="btn btn-add">+ Position</a>
+                    <a href="{% url 'invoices:offers_preview' offer.id %}" class="btn btn-action">Vorschau</a>
+                    <a href="{% url 'invoices:offers_download' offer.id %}" onclick="startDownloadAndRedirect()" class="btn btn-action">Download</a>
+                    <a href="{% url 'invoices:offers_delete' offer.id %}" class="btn btn-delete">Löschen</a>
+                {% endif %}
+                {% if offer.status == "sent" %}
+                    <a href="{% url 'invoices:offers_download' offer.id %}" class="btn btn-action">Download</a>
+                    <a href="{% url 'invoices:offers_accept' offer.id %}" class="btn btn-action">Akzeptiert</a>
+                    <a href="{% url 'invoices:offers_reject' offer.id %}" class="btn btn-action">Abgelehnt</a>
+                    <a href="{% url 'invoices:offers_expire' offer.id %}" class="btn btn-action">Ausgelaufen</a>
+                {% endif %}
+                {% if offer.status == "accepted" or offer.status == "rejected" or offer.status == "expired" %}
+                    <a href="{% url 'invoices:offers_download' offer.id %}" class="btn btn-action">Download</a>
+                {% endif %}
+            </div>
+            
+        </div>
+    </div>
+</div>
+
+<!-- HEADER INFO -->
+<div class="p-6 rounded-xl shadow bg-white dark:bg-slate-800 text-slate-900 dark:text-white transition-colors mb-8">
+
+    <h2 class="text-xl font-bold mb-6">Allgemein</h2>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+
+        <!-- Kunde -->
+        <div>
+            <div class="text-slate-400 text-sm">Kunde</div>
+            <div class="font-semibold">{{ offer.customer.company_name }}</div>
+        </div>
+
+        <!-- Status -->
+        <div>
+            <div class="text-slate-400 text-sm">Status</div>
+            <div class="font-semibold">{{ offer.get_status_display }}</div>
+        </div>
+
+        <!-- Datum -->
+        <div>
+            <div class="text-slate-400 text-sm">Angebotsdatum</div>
+            <div class="font-semibold">{{ offer.issue_date|date:"d.m.Y" }}</div>
+        </div>
+
+        <div>
+            <div class="text-slate-400 text-sm">Gültig bis</div>
+            <div class="font-semibold">{{ offer.due_date|date:"d.m.Y" }}</div>
+        </div>
+    </div>
+</div>
+
+
+<!-- SNAPSHOT: KONTAKT & ADRESSE -->
+<div class="mb-8 p-6 rounded-xl shadow bg-white dark:bg-slate-800 text-slate-900 dark:text-white transition-colors">
+
+    <h2 class="text-xl font-bold mb-6">Angebotsadresse</h2>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+
+        <!-- Kontakt -->
+        <div>
+            <div class="text-slate-400 text-sm">Ansprechpartner</div>
+            <div class="font-semibold">{{ offer.contact_name|default:"-" }}</div>
+
+            {% if offer.contact_email %}
+                <div class="text-slate-400 text-sm">{{ offer.contact_email }}</div>
+            {% endif %}
+
+            {% if offer.contact_phone %}
+                <div class="text-slate-400 text-sm">{{ offer.contact_phone }}</div>
+            {% endif %}
+        </div>
+
+        <!-- Adresse -->
+        <div>
+            <div class="text-slate-400 text-sm">Standort</div>
+
+            <div class="font-semibold">
+                {{ offer.location_name|default:"-" }}
+            </div>
+
+            <div class="text-slate-400 text-sm">
+                {{ offer.location_street }}
+            </div>
+
+            <div class="text-slate-400 text-sm">
+                {{ offer.location_zip }} {{ offer.location_city }}
+            </div>
+
+            <div class="text-slate-400 text-sm">
+                {{ offer.location_country }}
+            </div>
+        </div>
+
+    </div>
+</div>
+
+
+<div class="mb-8 p-6 rounded-xl shadow bg-white dark:bg-slate-800 text-slate-900 dark:text-white transition-colors">
+    <h2 class="text-xl font-bold mb-6">Angebotshinweis</h2>
+    <div class="grid grid-cols-1 gap-6">
+        <div>
+            <div class="font-semibold">{{ offer.note|default:"-" }}</div>
+        </div>
+    </div>
+</div>
+
+
+<!-- POSITIONEN -->
+<div class="p-6 rounded-xl shadow bg-white dark:bg-slate-800 text-slate-900 dark:text-white transition-colors">
+
+    <h2 class="text-xl font-bold mb-6">Positionen</h2>
+    <div class="overflow-x-auto rounded-xl">
+        {% render_table table %}
+    </div>
+
+
+    <div class="mt-4 text-right font-bold">
+        Gesamt: {{ total_net|floatformat:2 }} €
+    </div>
+
+</div>
+<script>
+function startDownloadAndRedirect() {
+    setTimeout(function() {
+        window.location.href = "{% url 'invoices:offers_detail' offer.id %}";
+    }, 1000);
+}
+</script>
+{% endblock %}

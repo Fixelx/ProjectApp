@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}Rechnungswesen - Rechnungen{% endblock %}
+
+{% block header_title %}Rechnungen{% endblock %}
+{% block header_description %}Rechnungen erstellen und verwalten{% endblock %}
+
+{% block content %}
+{% load django_tables2 %}
+<div class="mb-8">
+    <div class="p-6 rounded-xl shadow bg-white dark:bg-slate-800 text-slate-900 dark:text-white transition-colors">
+        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+            <div>
+                <h2 class="text-xl font-bold">Aktionen</h2>
+                <p class="text-slate-400 text-sm mt-1">Neue Rechnung erstellen</p>
+            </div>
+
+            <div class="flex flex-col sm:flex-row gap-2">
+                <a href="{% url 'invoices:invoice_add_customer' %}" class="btn btn-add">+ Kundenrechnung</a>
+                <a href="{% url 'invoices:invoice_add_project' %}" class="btn btn-add">+ Projektrechnung</a>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="p-6 rounded-xl shadow bg-white dark:bg-slate-800 text-slate-900 dark:text-white transition-colors">
+    <div class="mb-6">
+        <h2 class="text-xl font-bold">Rechnungen</h2>
+        <p class="text-slate-400 text-sm mt-1">Alle Rechnungen mit aktuellem Status</p>
+    </div>
+    <div class="overflow-x-auto rounded-xl">
+        {% render_table table %}
+    </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,9 @@
+{% if record.receipt %}
+<a href="{{ record.receipt.url }}"
+   target="_blank"
+   class="btn btn-action">
+    Download
+</a>
+{% else %}
+—
+{% endif %}

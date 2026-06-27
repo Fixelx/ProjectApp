@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block header_title %}
+Dashboard
+{% endblock %}
+
+{% block header_description %}
+Willkommen {{ user.username }}
+{% endblock %}
+
+{% block content %}
+
+
+<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 mb-8">
+        <a href="{% url 'invoices:overview' %}" class="border border-white/20 p-6 rounded-xl shadow bg-white dark:bg-slate-800 text-slate-900 dark:text-white transition-colors">
+            <div class="flex items-center gap-3 justify-center">
+                <h2 class="text-xl font-bold">Rechnungswesen</h2>
+            </div>
+        </a>
+    <!--
+        <a href="" class="border border-white/20 p-6 rounded-xl shadow bg-white dark:bg-slate-800 text-slate-900 dark:text-white transition-colors">
+            <div class="flex items-center gap-3 justify-center">
+                <h2 class="text-xl font-bold">Finanzübersicht</h2>
+            </div>
+        </a>
+        <a href="" class="border border-white/20 p-6 rounded-xl shadow bg-white dark:bg-slate-800 text-slate-900 dark:text-white transition-colors">
+            <div class="flex items-center gap-3 justify-center">
+                <h2 class="text-xl font-bold">Arbeitszeiten</h2>
+            </div>
+        </a>    -->
+        <a href="{% url 'inventory_global:overview' %}" class="border border-white/20 p-6 rounded-xl shadow bg-white dark:bg-slate-800 text-slate-900 dark:text-white transition-colors">
+            <div class="flex items-center gap-3 justify-center">
+                <h2 class="text-xl font-bold">Inventar</h2>
+            </div>
+        </a>
+    <!--
+        <a href="" class="border border-white/20 p-6 rounded-xl shadow bg-white dark:bg-slate-800 text-slate-900 dark:text-white transition-colors">
+            <div class="flex items-center gap-3 justify-center">
+                <h2 class="text-xl font-bold">Investitionen</h2>
+            </div>
+        </a>
+    -->
+        <a href="{% url 'accounts:overview' %}" class="border border-white/20 p-6 rounded-xl shadow bg-white dark:bg-slate-800 text-slate-900 dark:text-white transition-colors">
+            <div class="flex items-center gap-3 justify-center">
+                <h2 class="text-xl font-bold">Mitarbeiter</h2>
+            </div>
+        </a>
+
+        <a href="{% url 'masterdata:overview' %}" class="border border-white/20 p-6 rounded-xl shadow bg-white dark:bg-slate-800 text-slate-900 dark:text-white transition-colors">
+            <div class="flex items-center gap-3 justify-center">
+                <h2 class="text-xl font-bold">Einstellungen</h2>
+            </div>
+        </a>
+</div>
+
+
+
+
+
+
+
+
+
+<div class="mb-8">
+    <div class="p-6 rounded-xl shadow bg-white dark:bg-slate-800 text-slate-900 dark:text-white transition-colors">
+        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+            <div>
+                <h2 class="text-xl font-bold">Aktionen</h2>
+            </div>
+
+            <div class="flex flex-col sm:flex-row gap-2">
+                <a href="{% url 'projects:add' %}" class="btn btn-add">+ Projekt</a>
+            </div>
+            
+        </div>
+    </div>
+</div>
+
+{% if memberships %}
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+    {% for m in memberships %}
+    <a href="{% url 'projects:overview' m.project.id %}"
+       class="p-6 rounded-xl shadow hover:shadow-lg transition block text-white"
+       style="background: linear-gradient(135deg, {{ m.project.color }}, {{ m.project.color }}ff);">
+        <h2 class="text-xl font-bold">
+            {{ m.project.name }}
+        </h2>
+        <p class="text-sm mt-2">
+            Rolle: {{ m.get_role_display }}
+        </p>
+    </a>
+    {% endfor %}
+</div>
+{% else %}
+<div class="bg-white dark:bg-slate-800 border border-orange-500 rounded-xl p-6 text-orange-500">
+    Du bist noch keinem aktiven Projekt zugewiesen.
+</div>
+{% endif %}
+
+{% if archived_count %}
+<a href="{% url 'projects:archived' %}"  class="text-sm text-slate-400 hover:text-slate-500">
+    {{ archived_count }} archivierte 
+    {% if archived_count == 1 %}
+        Projekt anzeigen
+    {% else %}
+        Projekte anzeigen
+    {% endif %}
+</a>
+{% endif %}
+
+
+{% endblock %}

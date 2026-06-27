@@ -1,0 +1,218 @@
+<div>
+
+
+    <div class="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
+
+
+        <!-- Ansprechpartner -->
+
+        <div>
+
+            <h3 class="font-bold mb-3">
+                Ansprechpartner
+            </h3>
+
+
+            {% for contact in item.contacts.all %}
+
+                <div class="
+                    bg-slate-100
+                    dark:bg-slate-700
+                    rounded-xl
+                    p-3
+                    mb-2
+                ">
+
+                    <div class="font-medium">
+                        {{ contact.first_name }}
+                        {{ contact.last_name }}
+                    </div>
+
+
+                    {% if contact.phone %}
+
+                    <div class="text-sm text-slate-400">
+                        {{ contact.phone }}
+                    </div>
+
+                    {% endif %}
+
+
+                    {% if contact.email %}
+
+                    <div class="text-sm text-slate-400">
+                        {{ contact.email }}
+                    </div>
+
+                    {% endif %}
+
+                </div>
+
+
+            {% empty %}
+
+                <div class="
+                    bg-white
+                    dark:bg-slate-800
+                    border
+                    border-orange-500
+                    rounded-xl
+                    p-6
+                    text-orange-500
+                ">
+                    Keine Ansprechpartner vorhanden
+                </div>
+
+            {% endfor %}
+
+        </div>
+
+
+
+        <!-- Standorte -->
+
+        <div>
+
+            <h3 class="font-bold mb-3">
+                Standorte
+            </h3>
+
+
+            {% for location in item.locations.all %}
+
+                <div class="
+                    bg-slate-100
+                    dark:bg-slate-700
+                    rounded-xl
+                    p-3
+                    mb-2
+                ">
+
+                    <div class="font-medium">
+                        {{ location.name }}
+                    </div>
+
+
+                    <div class="text-sm text-slate-400">
+                        {{ location.street }}
+                    </div>
+
+
+                    <div class="text-sm text-slate-400">
+                        {{ location.zip_code }}
+                        {{ location.city }}
+                    </div>
+
+
+                    <div class="text-sm text-slate-400">
+                        {{ location.country }}
+                    </div>
+
+                </div>
+
+
+            {% empty %}
+
+                <div class="
+                    bg-white
+                    dark:bg-slate-800
+                    border
+                    border-orange-500
+                    rounded-xl
+                    p-6
+                    text-orange-500
+                ">
+                    Keine Standorte vorhanden
+                </div>
+
+            {% endfor %}
+
+        </div>
+
+
+
+        <!-- Projekte -->
+
+        <div>
+
+            <h3 class="font-bold mb-3">
+                Projekte
+            </h3>
+
+
+            {% for project in item.projects.all %}
+
+                <div class="
+                    bg-slate-100
+                    dark:bg-slate-700
+                    rounded-xl
+                    p-3
+                    mb-2
+                ">
+
+                    {{ project.name }}
+
+                </div>
+
+
+            {% empty %}
+
+                <div class="
+                    bg-white
+                    dark:bg-slate-800
+                    border
+                    border-orange-500
+                    rounded-xl
+                    p-6
+                    text-orange-500
+                ">
+                    Keine Projekte zugeordnet
+                </div>
+
+            {% endfor %}
+
+        </div>
+
+
+    </div>
+
+
+
+    <div class="mt-5 flex gap-2">
+
+
+        <a
+            href="{% url 'invoices:customers_detail' item.id %}"
+            class="btn btn-edit">
+
+            Bearbeiten
+
+        </a>
+
+
+
+        <form
+            method="post"
+            action="{% url 'invoices:customers_reactivate' item.id %}">
+
+            {% csrf_token %}
+
+
+            <button
+                type="submit"
+                name="archiv"
+                value="1"
+                class="btn btn-action">
+
+                Aktivieren
+
+            </button>
+
+
+        </form>
+
+
+    </div>
+
+
+</div>

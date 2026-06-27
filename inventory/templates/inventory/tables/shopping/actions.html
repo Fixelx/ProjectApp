@@ -1,0 +1,32 @@
+<form
+    id="shopping-save-form-{{ record.id }}"
+    method="post"
+    action="{% url 'inventory:shopping_edit' table.project.id record.id %}">
+
+    {% csrf_token %}
+
+    <input
+        type="hidden"
+        name="shopping_item_id"
+        value="{{ record.id }}">
+
+    <div class="flex gap-2">
+
+        <button
+            type="submit"
+            form="shopping-save-form-{{ record.id }}"
+            class="btn btn-save">
+            Speichern
+        </button>
+
+        <button
+            type="submit"
+            form="shopping-save-form-{{ record.id }}"
+            formaction="{% url 'inventory:shopping_delete' table.project.id record.id %}"
+            class="btn btn-delete">
+            Löschen
+        </button>
+
+    </div>
+
+</form>

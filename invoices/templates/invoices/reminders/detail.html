@@ -1,0 +1,184 @@
+{% extends "base.html" %}
+
+{% block title %}Rechnungswesen - Mahnungen{% endblock %}
+
+{% block header_title %}
+Mahnung {{ reminder.reminder_number }}
+{% endblock %}
+
+{% block header_description %}
+Details
+{% endblock %}
+
+{% block content %}
+<div class="mb-8">
+    <div class="p-6 rounded-xl shadow bg-white dark:bg-slate-800 text-slate-900 dark:text-white transition-colors">
+        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+            <div>
+                <h2 class="text-xl font-bold">Aktionen</h2>
+                <p class="text-slate-400 text-sm mt-1">
+                    Mahnung verwalten
+                </p>
+            </div>
+            <div class="flex flex-col sm:flex-row gap-2">
+                {% if reminder.status == "draft" %}
+                    <a href="{% url 'invoices:reminders_download' reminder.id %}" onclick="startDownloadAndRedirect()" class="btn btn-action">Download</a>
+                    <a href="{% url 'invoices:reminders_delete' reminder.id %}" class="btn btn-delete">Löschen</a>
+                {% endif %}
+                {% if reminder.status == "sent" %}
+                    <a href="{% url 'invoices:reminders_download' reminder.id %}" class="btn btn-action">Download</a>
+                    <a href="{% url 'invoices:reminders_cancel' reminder.id %}" class="btn btn-delete">Stornieren</a>
+                    <a href="{% url 'invoices:reminders_paid' reminder.id %}" class="btn btn-action">Zahlung verbuchen</a>
+                    <a href="{% url 'invoices:reminders_expire' reminder.id %}" class="btn btn-action">Überfällig</a>
+                {% endif %}
+                {% if reminder.status == "paid" or reminder.status == "canceled" or reminder.status == "expired" %}
+                    <a href="{% url 'invoices:reminders_download' reminder.id %}" class="btn btn-action">Download</a>
+                {% endif %}
+            </div>
+            
+        </div>
+    </div>
+</div>
+
+<!-- HEADER INFO -->
+<div class="p-6 rounded-xl shadow bg-white dark:bg-slate-800 text-slate-900 dark:text-white transition-colors mb-8">
+
+    <h2 class="text-xl font-bold mb-6">Allgemein</h2>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Status -->
+        <div>
+            <div class="text-slate-400 text-sm">Status</div>
+            <div class="font-semibold">{{ reminder.get_status_display }}</div>
+        </div>
+
+        <div>
+            <div class="text-slate-400 text-sm">Level</div>
+            <div class="font-semibold">{{ reminder.level }}/3</div>
+        </div>
+
+        <!-- Datum -->
+        <div>
+            <div class="text-slate-400 text-sm">Mahnungsdatum</div>
+            <div class="font-semibold">{{ reminder.issue_date|date:"d.m.Y" }}</div>
+        </div>
+
+        <div>
+            <div class="text-slate-400 text-sm">Neues Zahlungsziel</div>
+            <div class="font-semibold">{{ reminder.due_date|date:"d.m.Y" }}</div>
+        </div>
+
+        <div>
+            <div class="text-slate-400 text-sm">Mahngebühr</div>
+            <div class="font-semibold">{{ reminder.fee }} €</div>
+        </div>
+    </div>
+</div>
+
+
+<!-- HEADER INFO -->
+<div class="p-6 rounded-xl shadow bg-white dark:bg-slate-800 text-slate-900 dark:text-white transition-colors mb-8">
+
+    <h2 class="text-xl font-bold mb-6">Rechnungsinformationen</h2>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div>
+            <div class="text-slate-400 text-sm">Rechnungsnummer</div>
+            <div class="font-semibold"><a class="company_link" href="{% url 'invoices:invoices_detail' reminder.invoice.id %}">{{ reminder.invoice.invoice_number }}</a></div>
+        </div>
+
+        <!-- Kunde -->
+        <div>
+            <div class="text-slate-400 text-sm">Kunde</div>
+            <div class="font-semibold">{{ reminder.invoice.customer.company_name }}</div>
+        </div>
+
+        <div>
+            <div class="text-slate-400 text-sm">Projekt</div>
+            <div class="font-semibold">{{ reminder.invoice.project.name|default:"-" }}</div>
+        </div>
+
+        <!-- Status -->
+        <div>
+            <div class="text-slate-400 text-sm">Rechnungsstatus</div>
+            <div class="font-semibold">{{ reminder.invoice.get_status_display }}</div>
+        </div>
+
+        <!-- Datum -->
+        <div>
+            <div class="text-slate-400 text-sm">Rechnungsdatum</div>
+            <div class="font-semibold">{{ reminder.invoice.issue_date|date:"d.m.Y" }}</div>
+        </div>
+
+        <div>
+            <div class="text-slate-400 text-sm">Ursprüngliches Zahlungsziel</div>
+            <div class="font-semibold">{{ reminder.invoice.due_date|date:"d.m.Y" }}</div>
+        </div>
+    </div>
+</div>
+
+
+<!-- SNAPSHOT: KONTAKT & ADRESSE -->
+<div class="mb-8 p-6 rounded-xl shadow bg-white dark:bg-slate-800 text-slate-900 dark:text-white transition-colors">
+
+    <h2 class="text-xl font-bold mb-6">Mahnungsadresse</h2>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+
+        <!-- Kontakt -->
+        <div>
+            <div class="text-slate-400 text-sm">Ansprechpartner</div>
+            <div class="font-semibold">{{ reminder.invoice.contact_name|default:"-" }}</div>
+
+            {% if reminder.invoice.contact_email %}
+                <div class="text-slate-400 text-sm">{{ reminder.invoice.contact_email }}</div>
+            {% endif %}
+
+            {% if reminder.invoice.contact_phone %}
+                <div class="text-slate-400 text-sm">{{ reminder.invoice.contact_phone }}</div>
+            {% endif %}
+        </div>
+
+        <!-- Adresse -->
+        <div>
+            <div class="text-slate-400 text-sm">Standort</div>
+
+            <div class="font-semibold">
+                {{ reminder.invoice.location_name|default:"-" }}
+            </div>
+
+            <div class="text-slate-400 text-sm">
+                {{ reminder.invoice.location_street }}
+            </div>
+
+            <div class="text-slate-400 text-sm">
+                {{ reminder.invoice.location_zip }} {{ reminder.invoice.location_city }}
+            </div>
+
+            <div class="text-slate-400 text-sm">
+                {{ reminder.invoice.location_country }}
+            </div>
+        </div>
+
+    </div>
+</div>
+
+
+<div class="mb-8 p-6 rounded-xl shadow bg-white dark:bg-slate-800 text-slate-900 dark:text-white transition-colors">
+    <h2 class="text-xl font-bold mb-6">Mahnungshinweis</h2>
+    <div class="grid grid-cols-1 gap-6">
+        <div>
+            <div class="font-semibold">{{ reminder.note|default:"-" }}</div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+function startDownloadAndRedirect() {
+    setTimeout(function() {
+        window.location.href = "{% url 'invoices:reminders_detail' reminder.id %}";
+    }, 1000);
+}
+</script>
+{% endblock %}

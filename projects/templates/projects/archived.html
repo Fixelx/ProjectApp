@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}
+Projekt - Archiviert
+{% endblock %}
+
+{% block header_title %}
+Archivierte Projekte
+{% endblock %}
+
+{% block header_description %}
+Abgeschlossene und deaktivierte Projekte
+{% endblock %}
+
+{% block content %}
+
+{% if memberships %}
+
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+    {% for m in memberships %}
+    <a href="{% url 'projects:overview' m.project.id %}"
+       class="p-6 rounded-xl shadow hover:shadow-lg transition block text-white"
+       style="background: linear-gradient(135deg, {{ m.project.color }}, {{ m.project.color }}cc);">
+        <h2 class="text-xl font-bold">
+            {{ m.project.name }}
+        </h2>
+        <p class="text-sm mt-2">
+            Rolle: {{ m.get_role_display }}
+        </p>
+    </a>
+    {% endfor %}
+</div>
+
+{% else %}
+
+<div class="bg-yellow-100 border border-yellow-300 rounded-xl p-6">
+    Keine archivierten Projekte vorhanden.
+</div>
+
+{% endif %}
+
+
+{% endblock %}

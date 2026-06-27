@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block title %}
+Inventar
+{% endblock %}
+
+{% block header_title %}
+Inventarartikel hinzufügen
+{% endblock %}
+
+{% block header_description %}
+Neuen Artikel zum globalen Inventar hinzufügen
+{% endblock %}
+
+{% block content %}
+
+<div class="p-6 rounded-xl shadow bg-white dark:bg-slate-800 text-slate-900 dark:text-white transition-colors">
+
+
+        <form method="post" class="space-y-4">
+            {% csrf_token %}
+
+            <div class="grid grid-cols-1 gap-4">
+                {{ form.as_p }}
+            </div>
+
+            <button
+                type="submit"
+                class="btn mt-4 btn-save">
+                Speichern
+            </button>
+
+        </form>
+
+</div>
+
+{% endblock %}

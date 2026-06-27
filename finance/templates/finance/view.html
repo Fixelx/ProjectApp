@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block title %}{{ project.name }} - Finanzen{% endblock %}
+
+{% block header_title %}
+Finanzen Details
+{% endblock %}
+
+{% block header_description %}
+Zeitraum: {{ start_date|date:"d.m.Y" }} → {{ end_date|date:"d.m.Y" }}
+{% endblock %}
+
+{% block content %}
+{% load django_tables2 %}
+
+<div class="p-6 rounded-xl shadow bg-white dark:bg-slate-800 text-slate-900 dark:text-white transition-colors">
+    <div class="overflow-x-auto rounded-xl">{% render_table table %}</div>
+</div>
+
+{% endblock %}

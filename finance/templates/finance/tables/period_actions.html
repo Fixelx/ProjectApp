@@ -1,0 +1,8 @@
+<div class="flex gap-2">
+
+    <a href="{% url 'finance:view' project.id %}?start={{ record.period_start|date:'Y-m-d' }}&end={{ record.period_end|date:'Y-m-d' }}"
+       class="btn btn-edit">
+        Details
+    </a>
+
+</div>

@@ -1,0 +1,221 @@
+{% extends "base.html" %}
+
+{% block title %}Rechnungswesen - Rechnungen{% endblock %}
+
+{% block header_title %}
+Projektrechnung
+{% endblock %}
+
+{% block header_description %}
+Rechnung auf Basis eines Projekts erstellen
+{% endblock %}
+
+{% block content %}
+
+<div class="p-6 rounded-xl shadow bg-white dark:bg-slate-800 text-slate-900 dark:text-white transition-colors">
+
+    <form method="post" enctype="multipart/form-data" class="space-y-4">
+        {% csrf_token %}
+
+        {{ form.as_p }}
+
+        <button class="btn btn-save">
+            Speichern
+        </button>
+
+    </form>
+
+</div>
+
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const project = document.getElementById("id_project");
+
+    const contact = document.getElementById("id_contact");
+    const location = document.getElementById("id_location");
+
+
+    const customerFields = [
+        "id_contact",
+        "id_location"
+    ];
+
+
+    const manualFields = [
+        "id_contact_name_manual",
+        "id_contact_email_manual",
+        "id_contact_phone_manual",
+
+        "id_location_name_manual",
+        "id_location_street_manual",
+        "id_location_zip_manual",
+        "id_location_city_manual",
+        "id_location_country_manual"
+    ];
+
+
+
+    function hideField(id){
+
+        const field = document.getElementById(id);
+
+        if(field){
+            const row = field.closest("p");
+            row.style.display = "none";
+        }
+
+    }
+
+
+
+    function showField(id){
+
+        const field = document.getElementById(id);
+
+        if(field){
+            const row = field.closest("p");
+            row.style.display = "";
+        }
+
+    }
+
+
+
+    function hideCustomerFields(){
+
+        customerFields.forEach(hideField);
+
+    }
+
+
+    function showCustomerFields(){
+
+        customerFields.forEach(showField);
+
+    }
+
+
+
+    function hideManualFields(){
+
+        manualFields.forEach(hideField);
+
+    }
+
+
+
+    function showManualFields(){
+
+        manualFields.forEach(showField);
+
+    }
+
+
+
+    function fill(select, data){
+
+        if(!select){
+            return;
+        }
+
+        select.innerHTML = "<option value=''>---------</option>";
+
+        data.forEach(item => {
+
+            select.innerHTML += `
+                <option value="${item.id}">
+                    ${item.text}
+                </option>
+            `;
+
+        });
+
+    }
+
+
+
+    function checkProject(projectId){
+
+        if(!projectId){
+
+            hideCustomerFields();
+            hideManualFields();
+
+            return;
+
+        }
+
+
+        fetch(`/invoices/ajax/project/${projectId}/invoice-data/`)
+
+
+        .then(response => response.json())
+
+
+        .then(data => {
+
+
+            if(data.has_customer){
+
+
+                showCustomerFields();
+
+                hideManualFields();
+
+
+                fill(
+                    contact,
+                    data.contacts
+                );
+
+
+                fill(
+                    location,
+                    data.locations
+                );
+
+
+            } else {
+
+
+                hideCustomerFields();
+
+                showManualFields();
+
+
+            }
+
+
+        });
+
+    }
+
+
+
+    // Anfang prüfen
+    if(project.value){
+
+        checkProject(project.value);
+
+    } else {
+
+        hideCustomerFields();
+        hideManualFields();
+
+    }
+
+
+
+    project.addEventListener("change", function(){
+
+        checkProject(this.value);
+
+    });
+
+
+
+});
+</script>
+{% endblock %}

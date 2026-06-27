@@ -1,0 +1,63 @@
+<form method="post" action="{% url 'accounts:role_edit' item.id %}">
+    {% csrf_token %}
+
+    <div>
+
+        <h3 class="font-bold mb-4">
+            Berechtigungen
+        </h3>
+
+
+        <div class="grid md:grid-cols-2 xl-grid-cols-3 gap-4">
+
+            {% for permission in item.permissions %}
+
+                <label class="
+                    bg-slate-100 dark:bg-slate-700
+                    rounded-xl
+                    p-3
+                    flex
+                    items-center
+                    gap-3
+                ">
+
+                    <input
+                        type="checkbox"
+                        name="{{ permission.name }}"
+                        {% if permission.value %}
+                            checked
+                        {% endif %}
+                        class="w-4 h-4">
+
+                    <span>
+                        {{ permission.verbose_name }}
+                    </span>
+
+                </label>
+
+            {% endfor %}
+
+        </div>
+
+
+        <div class="mt-5 flex gap-2">
+
+            <button
+                type="submit"
+                class="btn btn-save">
+                Speichern
+            </button>
+
+
+            <button
+                type="submit"
+                formaction="{% url 'accounts:role_delete' item.id %}"
+                class="btn btn-delete">
+                Löschen
+            </button>
+
+        </div>
+
+    </div>
+
+</form>

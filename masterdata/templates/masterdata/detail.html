@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block title %}
+Einstellungen
+{% endblock %}
+
+
+{% block header_title %}
+{{ title }} bearbeiten
+{% endblock %}
+
+{% block header_description %}
+Einstellungen der App und Module bearbeiten
+{% endblock %}
+
+
+{% block content %}
+<div class="mb-8">
+    <div class="p-6 rounded-xl shadow bg-white dark:bg-slate-800 text-slate-900 dark:text-white transition-colors">
+        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+            <div>
+                <h2 class="text-xl font-bold">Aktionen</h2>
+                <p class="text-slate-400 text-sm mt-1">Einträge hinzufügen</p>
+            </div>
+
+            <div class="flex flex-col sm:flex-row gap-2">
+                <a href="{% url 'masterdata:add' model_name %}" class="btn btn-add">+ Eintrag</a>
+            </div>
+            
+        </div>
+    </div>
+</div>
+
+
+
+
+<div class="p-6 rounded-xl shadow bg-white dark:bg-slate-800 text-slate-900 dark:text-white transition-colors">
+    <h2 class="text-xl font-bold">Einträge</h2>
+    {% for obj in objects %}
+        <div class="flex justify-between border-b py-3">
+            <span>{{ obj }}</span>
+
+            <form method="post" action="{% url 'masterdata:delete' model_name obj.id %}">
+                {% csrf_token %}
+                <button class="btn btn-delete">Löschen</button>
+            </form>
+        </div>
+    {% empty %}
+        <div class="mt-4 bg-white dark:bg-slate-800 border border-orange-500 rounded-xl p-6 text-orange-500">
+            Keine Einträge in der Datenbank
+        </div>
+    {% endfor %}
+</div>
+{% endblock %}

@@ -1,0 +1,230 @@
+{% extends "base.html" %}
+
+{% block title %}
+Rechnungswesen - Kunden
+{% endblock %}
+
+{% block header_title %}
+{{ customer.customer_number }} - {{ customer.company_name }}
+{% endblock %}
+
+{% block header_description %}
+Kunde bearbeiten
+{% endblock %}
+
+{% block content %}
+<form method="post" action="{% url 'invoices:customers_edit' customer.id %}">
+    {% csrf_token %}
+
+    <div class="p-6 rounded-xl shadow bg-white dark:bg-slate-800 text-slate-900 dark:text-white transition-colors">
+
+        <h2 class="text-xl font-bold mb-2">Kundendaten</h2>
+
+        <div class="grid md:grid-cols-2 gap-4 mb-8">
+
+            {% for field in form %}
+            <div>
+                <label class="block text-sm font-medium mb-1">
+                    {{ field.label }}
+                </label>
+
+                {{ field }}
+
+                {% if field.errors %}
+                <div class="text-red-600 text-sm mt-1">
+                    {{ field.errors }}
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+
+        </div>
+
+
+    <div class="grid lg:grid-cols-2 gap-8">
+
+        <!-- Ansprechpartner -->
+        <div>
+
+            <h2 class="font-bold text-lg mb-2">
+                Ansprechpartner
+            </h2>
+
+            {% for contact in customer.contacts.all %}
+            <div class="bg-slate-100 dark:bg-slate-700 rounded-xl p-4 mb-3">
+
+                <div class="grid md:grid-cols-2 gap-3">
+
+                    <input
+                        type="text"
+                        name="contact_first_name_{{ contact.id }}"
+                        value="{{ contact.first_name }}"
+                        placeholder="Vorname"
+                        class="border rounded px-3 py-2">
+
+                    <input
+                        type="text"
+                        name="contact_last_name_{{ contact.id }}"
+                        value="{{ contact.last_name }}"
+                        placeholder="Nachname"
+                        class="border rounded px-3 py-2">
+
+                    <input
+                        type="email"
+                        name="contact_email_{{ contact.id }}"
+                        value="{{ contact.email }}"
+                        placeholder="E-Mail"
+                        class="border rounded px-3 py-2">
+
+                    <input
+                        type="text"
+                        name="contact_phone_{{ contact.id }}"
+                        value="{{ contact.phone }}"
+                        placeholder="Telefon"
+                        class="border rounded px-3 py-2">
+
+                </div>
+
+                <button type="submit"
+                        name="delete_contact_id"
+                        value="{{ contact.id }}"
+                        class="btn btn-delete">
+                    Löschen
+                </button>
+
+            </div>
+            {% endfor %}
+
+            <div id="contacts-container"></div>
+
+            <button
+                type="button"
+                onclick="addContact()"
+                class="btn btn-add">
+                + Ansprechpartner hinzufügen
+            </button>
+
+        </div>
+
+
+        <!-- Standorte -->
+        <div>
+
+            <h2 class="font-bold text-lg mb-2">
+                Standorte
+            </h2>
+
+            {% for location in customer.locations.all %}
+            <div class="bg-slate-100 dark:bg-slate-700 rounded-xl p-4 mb-3">
+
+                <div class="grid md:grid-cols-2 gap-3">
+
+                    <input
+                        type="text"
+                        name="location_name_{{ location.id }}"
+                        value="{{ location.name }}"
+                        placeholder="Name"
+                        class="border rounded px-3 py-2">
+
+                    <input
+                        type="text"
+                        name="location_street_{{ location.id }}"
+                        value="{{ location.street }}"
+                        placeholder="Straße"
+                        class="border rounded px-3 py-2">
+
+                    <input
+                        type="text"
+                        name="location_zip_{{ location.id }}"
+                        value="{{ location.zip_code }}"
+                        placeholder="PLZ"
+                        class="border rounded px-3 py-2">
+
+                    <input
+                        type="text"
+                        name="location_city_{{ location.id }}"
+                        value="{{ location.city }}"
+                        placeholder="Ort"
+                        class="border rounded px-3 py-2">
+
+                    <input
+                        type="text"
+                        name="location_country_{{ location.id }}"
+                        value="{{ location.country }}"
+                        placeholder="Land"
+                        class="border rounded px-3 py-2 md:col-span-2">
+
+                </div>
+
+                <button type="submit"
+                        name="delete_location_id"
+                        value="{{ location.id }}"
+                        class="btn btn-delete">
+                    Löschen
+                </button>
+
+            </div>
+            {% endfor %}
+
+            <div id="locations-container"></div>
+
+            <button
+                type="button"
+                onclick="addLocation()"
+                class="btn btn-add">
+                + Standort hinzufügen
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <button
+        type="submit"
+        class="btn mt-8 btn-save">
+        Speichern
+    </button>
+
+</div>
+
+</form>
+
+
+<script>
+
+function addContact() {
+    document.getElementById("contacts-container").insertAdjacentHTML("beforeend", `
+        <div class="contact-card bg-slate-100 dark:bg-slate-700 rounded-xl p-4 mb-3">
+            <div class="grid md:grid-cols-2 gap-3">
+
+                <input type="text" name="new_contact_first_name" placeholder="Vorname" class="border rounded px-3 py-2">
+                <input type="text" name="new_contact_last_name" placeholder="Nachname" class="border rounded px-3 py-2">
+                <input type="email" name="new_contact_email" placeholder="E-Mail" class="border rounded px-3 py-2">
+                <input type="text" name="new_contact_phone" placeholder="Telefon" class="border rounded px-3 py-2">
+
+            </div>
+        </div>
+    `);
+}
+
+function addLocation() {
+    document.getElementById("locations-container").insertAdjacentHTML("beforeend", `
+        <div class="location-card bg-slate-100 dark:bg-slate-700 rounded-xl p-4 mb-3">
+
+            <div class="grid md:grid-cols-2 gap-3">
+
+                <input type="text" name="new_location_name" placeholder="Name" class="border rounded px-3 py-2">
+                <input type="text" name="new_location_street" placeholder="Straße" class="border rounded px-3 py-2">
+                <input type="text" name="new_location_zip" placeholder="PLZ" class="border rounded px-3 py-2">
+                <input type="text" name="new_location_city" placeholder="Ort" class="border rounded px-3 py-2">
+                <input type="text" name="new_location_country" placeholder="Land" class="border rounded px-3 py-2 md:col-span-2">
+
+            </div>
+        </div>
+    `);
+}
+
+</script>
+
+{% endblock %}

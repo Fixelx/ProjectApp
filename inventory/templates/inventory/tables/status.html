@@ -1,0 +1,21 @@
+<select
+    name="status"
+    form="save-form-{{ record.id }}"
+    class="border rounded px-2 py-1">
+
+    <option value="open"
+        {% if record.status == "open" %}selected{% endif %}>
+        Offen
+    </option>
+
+    <option value="packed"
+        {% if record.status == "packed" %}selected{% endif %}>
+        Eingepackt
+    </option>
+
+    <option value="on_site"
+        {% if record.status == "on_site" %}selected{% endif %}>
+        Vor Ort
+    </option>
+
+</select>

@@ -1,0 +1,16 @@
+<select
+    name="item_type"
+    form="save-form-{{ record.id }}"
+    class="border rounded px-2 py-1 w-full">
+
+    {% for v,l in table.types %}
+
+        <option
+            value="{{ v }}"
+            {% if record.item_type == v %}selected{% endif %}>
+            {{ l }}
+        </option>
+
+    {% endfor %}
+
+</select>

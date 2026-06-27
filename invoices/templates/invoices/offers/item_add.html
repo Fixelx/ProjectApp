@@ -1,0 +1,197 @@
+{% extends "base.html" %}
+
+{% block title %}
+Rechnungswesen - Rechnungen
+{% endblock %}
+
+{% block header_title %}
+Rechnungsposition hinzufügen
+{% endblock %}
+
+{% block header_description %}
+Neue Rechnungsposition anlegen
+{% endblock %}
+
+{% block content %}
+
+<div class="p-6 rounded-xl shadow bg-white dark:bg-slate-800 text-slate-900 dark:text-white transition-colors">
+
+    <form method="post" enctype="multipart/form-data" class="space-y-4">
+        {% csrf_token %}
+
+        {{ form.as_p }}
+
+        <button class="btn btn-save">
+            Speichern
+        </button>
+
+    </form>
+
+</div>
+
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const source = document.getElementById("id_source_type");
+
+    const fields = {
+        item: document.getElementById("id_item"),
+        time: document.getElementById("id_time_entry"),
+        expense: document.getElementById("id_expense"),
+    };
+
+
+    function toggleFields() {
+
+        const value = source.value;
+
+
+        Object.keys(fields).forEach(key => {
+
+            const field = fields[key];
+
+            if (!field) {
+                return;
+            }
+
+
+            const row = field.closest("p");
+
+
+            if (key === value) {
+
+                row.style.display = "";
+
+            } else {
+
+                row.style.display = "none";
+
+                field.value = "";
+
+            }
+
+        });
+
+    }
+
+
+    source.addEventListener(
+        "change",
+        toggleFields
+    );
+
+
+    // Initial ausführen
+    toggleFields();
+
+});
+</script>
+
+<script>
+
+document.addEventListener("DOMContentLoaded", function () {
+
+
+const source = document.getElementById("id_source_type");
+
+
+const selects = {
+
+    item: document.getElementById("id_item"),
+
+    time: document.getElementById("id_time_entry"),
+
+    expense: document.getElementById("id_expense"),
+
+};
+
+
+const description = document.getElementById(
+    "id_description"
+);
+
+const quantity = document.getElementById(
+    "id_quantity"
+);
+
+const unit = document.getElementById(
+    "id_unit"
+);
+
+const price = document.getElementById(
+    "id_unit_price_net"
+);
+
+const tax = document.getElementById(
+    "id_unit_tax_rate"
+);
+
+
+
+function loadData(type, id){
+
+
+    if(!id){
+        return;
+    }
+
+
+    fetch(
+        `/invoices/ajax/invoice-item-data/?source=${type}&id=${id}`
+    )
+
+
+    .then(response => response.json())
+
+
+    .then(data => {
+
+
+        description.value = data.description;
+
+        quantity.value = data.quantity;
+
+        unit.value = data.unit;
+
+        price.value = data.unit_price_net;
+
+        tax.value = data.unit_tax_rate;
+
+
+    });
+
+
+}
+
+
+
+Object.keys(selects).forEach(type => {
+
+
+    if(selects[type]){
+
+
+        selects[type].addEventListener(
+            "change",
+            function(){
+
+                loadData(
+                    type,
+                    this.value
+                );
+
+            }
+        );
+
+
+    }
+
+
+});
+
+
+});
+
+</script>
+{% endblock %}

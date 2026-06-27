@@ -1,0 +1,20 @@
+<form
+    method="post"
+    action="{% url 'invoices:offers_item_delete' table.offer.id record.id %}">
+
+    {% csrf_token %}
+
+    <input
+        type="hidden"
+        name="delete_item"
+        value="{{ record.id }}">
+
+    <button
+        type="submit"
+        class="btn btn-delete">
+
+        Löschen
+
+    </button>
+
+</form>

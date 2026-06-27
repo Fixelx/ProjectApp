@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block title %}Rechnungswesen - Rechnungen{% endblock %}
+
+{% block header_title %}
+Kundenrechnung
+{% endblock %}
+
+{% block header_description %}
+Rechnung auf Basis eines Kunden erstellen
+{% endblock %}
+
+{% block content %}
+
+<div class="p-6 rounded-xl shadow bg-white dark:bg-slate-800 text-slate-900 dark:text-white transition-colors">
+
+    <form method="post" enctype="multipart/form-data" class="space-y-4">
+        {% csrf_token %}
+
+        {{ form.as_p }}
+
+        <button class="btn btn-save">
+            Speichern
+        </button>
+
+    </form>
+
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const customer = document.getElementById("id_customer");
+    const contact = document.getElementById("id_contact");
+    const location = document.getElementById("id_location");
+
+    function fill(select, data) {
+        select.innerHTML = "<option value=''>---------</option>";
+        data.forEach(item => {
+            select.innerHTML += `<option value="${item.id}">${item.text}</option>`;
+        });
+    }
+
+    if (customer) {
+        customer.addEventListener("change", function () {
+
+            const id = this.value;
+
+            if (!id) {
+                contact.innerHTML = "";
+                location.innerHTML = "";
+                return;
+            }
+
+            fetch(`/invoices/ajax/customer/${id}/contacts/`)
+                .then(r => r.json())
+                .then(data => fill(contact, data));
+
+            fetch(`/invoices/ajax/customer/${id}/locations/`)
+                .then(r => r.json())
+                .then(data => fill(location, data));
+
+        });
+    }
+
+});
+</script>
+
+{% endblock %}

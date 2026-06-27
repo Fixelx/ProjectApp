@@ -1,0 +1,78 @@
+@import "tailwindcss";
+
+/**
+  * A catch-all path to Django template files, JavaScript, and Python files
+  * that contain Tailwind CSS classes and will be scanned by Tailwind to generate the final CSS file.
+  *
+  * If your final CSS file is not being updated after code changes, you may want to broaden or narrow
+  * the scope of this path.
+  */
+@source "../../../**/*.{html,py,js}";
+@variant dark (&:where(.dark, .dark *));
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+@layer components {
+    .company_link {
+        @apply font-semibold transition-colors;
+        color: var(--company-color);
+    }
+    .company_link:hover {
+        opacity: 0.8;
+    }
+
+
+    .btn {
+        @apply inline-flex items-center justify-center
+            px-5 py-2
+            rounded-lg
+            font-medium
+            transition-all
+            duration-200
+            shadow-sm
+            hover:shadow-md
+            active:scale-[0.98]
+            disabled:opacity-50
+            disabled:pointer-events-none;
+    }
+    .btn:hover {
+        opacity: 0.8;
+    }
+
+
+    .btn-save {
+        @apply text-white;
+        background-color: var(--company-color);
+    }
+
+    .btn-delete {
+        @apply text-white;
+        background-color: #cc4d49;
+    }
+
+    .btn-edit {
+        @apply text-white;
+        background-color: var(--company-color);
+    }
+
+    .btn-add {
+        @apply text-white;
+        background-color: var(--company-color);
+    }
+
+    .btn-action {
+        @apply text-white;
+        background: var(--company-color);
+    }
+
+    .btn-action-start {
+        @apply text-white;
+        background-color: #059669;
+    }
+
+    .btn-action-stop {
+        @apply text-white;
+        background-color: #cc4d49;
+    }
+}

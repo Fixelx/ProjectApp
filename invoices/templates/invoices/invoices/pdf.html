@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+
+<meta charset="UTF-8">
+
+<style>
+
+@page {
+    size: A4;
+    margin: 18mm;
+}
+
+
+body {
+    font-family: Arial, sans-serif;
+    font-size: 11px;
+    color: #334155;
+}
+
+
+h1,h2,h3,p {
+    margin:0;
+}
+
+
+table {
+    width:100%;
+    border-collapse:collapse;
+}
+
+
+
+.header {
+    display:flex;
+    justify-content:space-between;
+}
+
+
+.logo {
+    height:128px;
+    margin-bottom:15px;
+}
+
+
+.company-name {
+    font-size:24px;
+    font-weight:bold;
+}
+
+
+.invoice-title {
+    font-size:32px;
+    font-weight:bold;
+}
+
+
+
+.info-table td {
+    padding:4px 0;
+}
+
+
+.label {
+    color:#64748b;
+    padding-right:30px;
+}
+
+
+
+
+.divider {
+    border-top:1px solid #e2e8f0;
+    margin:30px 0;
+}
+
+
+
+
+.receiver-title {
+    font-size:10px;
+    text-transform:uppercase;
+    color:#64748b;
+    letter-spacing:1px;
+}
+
+
+.receiver-name {
+    font-size:16px;
+    font-weight:bold;
+    margin-top:5px;
+}
+
+
+
+
+
+.invoice-heading {
+    font-size:22px;
+    font-weight:bold;
+    margin-bottom:10px;
+}
+
+
+
+
+.items-wrapper {
+    border:1px solid #e2e8f0;
+    border-radius:10px;
+    overflow:hidden;
+    margin-top:20px;
+}
+
+
+.items {
+    width:100%;
+    border-collapse:collapse;
+}
+
+
+.items thead th:first-child {
+    border-top-left-radius:10px;
+}
+
+
+.items thead th:last-child {
+    border-top-right-radius:10px;
+}
+
+
+.items th {
+    background:{{ company.color }};
+    color:white;
+    padding:10px;
+    text-align:left;
+}
+
+
+.items td {
+    padding:10px;
+    border-bottom:1px solid #e2e8f0;
+}
+
+
+.items tbody tr:last-child td {
+    border-bottom:none;
+}
+
+
+.right {
+    text-align:right;
+}
+
+
+
+.total-box {
+
+    margin-top:30px;
+    margin-left:auto;
+    width:250px;
+
+}
+
+
+.total-row {
+
+    display:flex;
+    justify-content:space-between;
+    padding:6px 0;
+
+}
+
+
+
+.total-final {
+
+    border-top:1px solid #cbd5e1;
+    margin-top:10px;
+    padding-top:10px;
+    font-size:16px;
+    font-weight:bold;
+
+}
+
+
+
+
+.note {
+    margin-top:30px;
+    padding:12px;
+    border:1px solid #e2e8f0;
+    border-radius: 10px;
+}
+
+
+
+.small-business {
+
+    margin-top:25px;
+    color:#64748b;
+
+}
+
+
+
+@page {
+    size: A4;
+    margin: 18mm 18mm 35mm 18mm;
+}
+
+
+.footer {
+    position: fixed;
+    bottom: -25mm;
+    left: 0;
+    right: 0;
+
+    padding-top:15px;
+    border-top:1px solid #e2e8f0;
+
+    display:flex;
+    justify-content:space-between;
+
+    font-size:10px;
+    color:#64748b;
+}
+
+
+.footer-title {
+    font-weight:bold;
+    color:#334155;
+    margin-bottom:5px;
+}
+
+
+</style>
+
+</head>
+
+
+<body>
+
+
+<!-- HEADER -->
+
+
+<div class="header">
+
+
+<div>
+
+            {% if company.logo %}
+                <img src="{{ company.logo.url }}" class="logo">
+            {% else %}
+                <h1 class="company-name" style="color: {{ company.color }}">
+                    {{ company.companyname }}
+                </h1>
+
+                {% if company.slogan %}
+                    <p>
+                        {{ company.slogan }}
+                    </p>
+                {% endif %}
+            {% endif %}
+
+
+
+<p style="margin-top:15px">
+{{ company.name }}<br>
+{{ company.street }} · {{ company.zip }} {{ company.city }}
+</p>
+
+
+</div>
+
+
+
+<div style="text-align:right">
+
+
+<div class="invoice-title">
+RECHNUNG
+</div>
+
+
+<table class="info-table">
+
+
+<tr>
+<td class="label">
+Rechnungsnummer
+</td>
+
+<td>
+{{ invoice.invoice_number }}
+</td>
+</tr>
+
+
+<tr>
+<td class="label">
+Rechnungsdatum
+</td>
+
+<td>
+{{ invoice.issue_date|date:"d.m.Y" }}
+</td>
+</tr>
+
+
+
+{% if invoice.due_date %}
+
+<tr>
+
+<td class="label">
+Fälligkeitsdatum
+</td>
+
+<td>
+{{ invoice.due_date|date:"d.m.Y" }}
+</td>
+
+</tr>
+
+{% endif %}
+
+
+</table>
+
+
+</div>
+
+
+</div>
+
+
+
+<div class="divider"></div>
+
+
+
+
+<!-- EMPFÄNGER -->
+
+
+<div>
+
+
+<div class="receiver-title">
+Rechnungsempfänger
+</div>
+
+
+
+<div class="receiver-name">
+
+{% if invoice.customer.type == "company" %}
+{{ invoice.customer.company_name }}
+{% else %}
+{{ invoice.contact_name }}
+{% endif %}
+
+</div>
+
+
+{% if invoice.customer.type == "company" %}
+
+<p>
+z.Hd. {{ invoice.contact_name }}
+</p>
+
+{% endif %}
+
+
+<p style="margin-top:10px">
+
+{{ invoice.location_street }}<br>
+
+{{ invoice.location_zip }}
+{{ invoice.location_city }}
+
+</p>
+
+
+</div>
+
+
+
+
+
+<!-- TITEL -->
+
+
+<div style="margin-top:40px">
+
+
+<div class="invoice-heading"
+style="color:{{ company.color }}">
+
+Rechnung
+
+</div>
+
+
+{% if company.invoice_header_text %}
+
+<p>
+{{ company.invoice_header_text|linebreaksbr }}
+</p>
+
+{% endif %}
+
+
+</div>
+
+
+
+
+
+<!-- POSITIONEN -->
+
+<div class="items-wrapper">
+<table class="items">
+
+
+<thead>
+
+<tr>
+
+<th>
+Nr.
+</th>
+
+<th>
+Beschreibung
+</th>
+
+                    {% if show_service_date %}
+                        <th class="left">Leistungsdatum</th>
+                    {% endif %}
+
+<th class="left">
+Menge
+</th>
+
+<th class="left">
+Einheit
+</th>
+
+<th class="left">
+Preis
+</th>
+
+
+{% if not company.is_small_business %}
+
+<th class="left">
+Steuer
+</th>
+
+{% endif %}
+
+
+<th class="left">
+Gesamt
+</th>
+
+
+</tr>
+
+</thead>
+
+
+
+<tbody>
+
+
+{% for item in items %}
+
+<tr>
+
+
+<td>
+{{ forloop.counter }}
+</td>
+
+
+<td>
+{{ item.description }}
+</td>
+
+
+                    {% if show_service_date %}
+                        <td class="left">
+                            {% if item.service_period_from %}
+                                {{ item.service_period_from|date:"d.m.Y" }}
+                            {% endif %}
+                            {% if item.service_period_to %}
+                                - {{ item.service_period_to|date:"d.m.Y" }}
+                            {% endif %}
+                        </td>
+                    {% endif %}
+
+<td class="left">
+{{ item.quantity }}
+</td>
+
+
+<td class="left">
+{{ item.unit }}
+</td>
+
+
+<td class="left">
+{{ item.unit_price_net|floatformat:2 }} €
+</td>
+
+
+{% if not company.is_small_business %}
+
+<td class="left">
+{{ item.unit_tax_rate|floatformat:0 }} %
+</td>
+
+{% endif %}
+
+
+
+<td class="left">
+{{ item.calculated_total_net|floatformat:2 }} €
+</td>
+
+
+
+</tr>
+
+
+{% endfor %}
+
+
+</tbody>
+
+
+</table>
+</div>
+
+
+
+
+<!-- SUMMEN -->
+
+
+<div class="total-box">
+
+
+<div class="total-row">
+
+<span>
+Netto
+</span>
+
+<span>
+{{ total_net|floatformat:2 }} €
+</span>
+
+</div>
+
+
+
+{% if not company.is_small_business %}
+{% for tax_rate,tax_amount in tax_summary.items %}
+
+<div class="total-row">
+
+<span>
+Umsatzsteuer {{ tax_rate|floatformat:0 }} %
+</span>
+
+
+<span>
+{{ tax_amount|floatformat:2 }} €
+</span>
+
+
+</div>
+
+
+{% endfor %}
+
+{% endif %}
+
+
+
+
+<div class="total-row total-final">
+
+<span>
+Gesamt
+</span>
+
+
+<span>
+
+{% if company.is_small_business %}
+{{ total_net|floatformat:2 }}
+{% else %}
+{{ total_gross|floatformat:2 }}
+{% endif %}
+
+€
+
+</span>
+
+
+</div>
+
+
+</div>
+
+
+
+
+
+{% if invoice.note %}
+
+<div class="note">
+
+<div class="receiver-title">
+Rechnungshinweis
+</div>
+
+<br>
+
+{{ invoice.note|linebreaksbr }}
+
+</div>
+
+{% endif %}
+
+
+
+
+
+
+{% if company.is_small_business %}
+
+<div class="note">
+
+    <div class="receiver-title">
+        Kleinunternehmerhinweis
+    </div>
+    <br>
+    {{ company.small_business_text }}
+</div>
+
+{% endif %}
+
+
+
+
+
+<!-- FOOTER -->
+
+
+<div class="footer">
+
+
+<div>
+
+<div class="footer-title">
+Kontakt
+</div>
+
+{% if company.phone %}
+{{ company.phone }}<br>
+{% endif %}
+
+{% if company.email %}
+{{ company.email }}<br>
+{% endif %}
+
+{% if company.website %}
+{{ company.website }}
+{% endif %}
+
+</div>
+
+
+
+
+<div>
+
+<div class="footer-title">
+Steuern
+</div>
+
+
+{% if company.tax_number %}
+Steuernummer: {{ company.tax_number }}<br>
+{% endif %}
+
+
+{% if company.vat_number %}
+USt-IdNr.: {{ company.vat_number }}
+{% endif %}
+
+
+</div>
+
+
+
+
+
+<div>
+
+<div class="footer-title">
+Bank
+</div>
+
+
+{% if company.bank_name %}
+{{ company.bank_name }}<br>
+{% endif %}
+
+
+{% if company.iban %}
+IBAN: {{ company.iban }}<br>
+{% endif %}
+
+
+{% if company.bic %}
+BIC: {{ company.bic }}
+{% endif %}
+
+
+</div>
+
+
+</div>
+
+
+
+</body>
+
+</html>

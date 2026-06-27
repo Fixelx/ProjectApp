@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+
+{% block title %}
+Mitarbeiter
+{% endblock %}
+
+{% block header_title %}
+Mitarbeiter
+{% endblock %}
+
+{% block header_description %}
+Mitarbeiter, Rollen und Berechtigungen verwalten
+{% endblock %}
+
+{% block content %}
+{% load django_tables2 %}
+<div class="mb-8">
+    <div class="p-6 rounded-xl shadow bg-white dark:bg-slate-800 text-slate-900 dark:text-white transition-colors">
+        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+            <div>
+                <h2 class="text-xl font-bold">Aktionen</h2>
+                <p class="text-slate-400 text-sm mt-1">Mitarbeiter oder Rollen hinzufügen</p>
+            </div>
+
+            <div class="flex flex-col sm:flex-row gap-2">
+                <a href="{% url 'accounts:user_add' %}" class="btn btn-add">+ Mitarbeiter</a>
+                <a href="{% url 'accounts:role_add' %}" class="btn btn-add">+ Rolle</a>
+            </div>
+            
+        </div>
+    </div>
+</div>
+
+
+<div class="p-6 rounded-xl shadow bg-white dark:bg-slate-800 text-slate-900 dark:text-white transition-colors mb-8">
+
+    <div class="mb-6">
+        <h2 class="text-xl font-bold">
+            Benutzer
+        </h2>
+
+        <p class="text-slate-400 text-sm mt-1">
+            Aktive Benutzer mit Rollen und Berechtigungen
+        </p>
+    </div>
+
+    <div class="overflow-x-auto rounded-xl">
+
+        {% render_table table %}
+
+    </div>
+
+</div>
+
+
+
+
+
+<div class="p-6 rounded-xl shadow bg-white dark:bg-slate-800 text-slate-900 dark:text-white transition-colors mb-8">
+
+    <div class="mb-6">
+        <h2 class="text-xl font-bold">
+            Archivierte Benutzer
+        </h2>
+
+        <p class="text-slate-400 text-sm mt-1">
+            Deaktivierte Benutzer
+        </p>
+    </div>
+
+    <div class="overflow-x-auto rounded-xl">
+
+        {% render_table archived_table %}
+    </div>
+</div>
+
+
+
+<div class="p-6 rounded-xl shadow bg-white dark:bg-slate-800 text-slate-900 dark:text-white transition-colors mt-8">
+
+    <div class="mb-6">
+        <h2 class="text-xl font-bold">
+            Rollen
+        </h2>
+
+        <p class="text-slate-400 text-sm mt-1">
+            Rollen und Berechtigungen verwalten
+        </p>
+    </div>
+
+
+    <div class="overflow-x-auto rounded-xl">
+
+        {% render_table role_table %}
+
+    </div>
+
+
+</div>
+{% endblock %}

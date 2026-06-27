@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+
+{% block title %}
+{{ project.name }} - Informationen
+{% endblock %}
+
+
+{% block header_title %}
+Mitarbeiter hinzufügen
+{% endblock %}
+
+
+{% block header_description %}
+Benutzer zum Projekt hinzufügen
+{% endblock %}
+
+
+{% block content %}
+
+    <div class="p-6 rounded-xl shadow bg-white dark:bg-slate-800 text-slate-900 dark:text-white transition-colors">
+
+        <form method="post" class="space-y-4">
+
+            {% csrf_token %}
+
+            {{ form.as_p }}
+
+            <div class="mt-6 flex gap-2">
+
+
+            <button
+                type="submit"
+                class="btn mt-4 btn-save">
+                Speichern
+            </button>
+
+
+            </div>
+
+        </form>
+
+    </div>
+
+
+{% endblock %}

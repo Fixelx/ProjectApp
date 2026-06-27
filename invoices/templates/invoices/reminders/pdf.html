@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+
+<meta charset="UTF-8">
+
+<style>
+
+@page {
+    size: A4;
+    margin: 18mm;
+}
+
+
+body {
+    font-family: Arial, sans-serif;
+    font-size: 11px;
+    color: #334155;
+}
+
+
+h1,h2,h3,p {
+    margin:0;
+}
+
+
+table {
+    width:100%;
+    border-collapse:collapse;
+}
+
+
+
+.header {
+    display:flex;
+    justify-content:space-between;
+}
+
+
+.logo {
+    height:128px;
+    margin-bottom:15px;
+}
+
+
+.company-name {
+    font-size:24px;
+    font-weight:bold;
+}
+
+
+.invoice-title {
+    font-size:32px;
+    font-weight:bold;
+}
+
+
+
+.info-table td {
+    padding:4px 0;
+}
+
+
+.label {
+    color:#64748b;
+    padding-right:30px;
+}
+
+
+
+
+.divider {
+    border-top:1px solid #e2e8f0;
+    margin:30px 0;
+}
+
+
+
+
+.receiver-title {
+    font-size:10px;
+    text-transform:uppercase;
+    color:#64748b;
+    letter-spacing:1px;
+}
+
+
+.receiver-name {
+    font-size:16px;
+    font-weight:bold;
+    margin-top:5px;
+}
+
+
+
+
+
+.invoice-heading {
+    font-size:22px;
+    font-weight:bold;
+    margin-bottom:10px;
+}
+
+
+
+
+.items-wrapper {
+    border:1px solid #e2e8f0;
+    border-radius:10px;
+    overflow:hidden;
+    margin-top:20px;
+}
+
+
+.items {
+    width:100%;
+    border-collapse:collapse;
+}
+
+
+.items thead th:first-child {
+    border-top-left-radius:10px;
+}
+
+
+.items thead th:last-child {
+    border-top-right-radius:10px;
+}
+
+
+.items th {
+    background:{{ company.color }};
+    color:white;
+    padding:10px;
+    text-align:left;
+}
+
+
+.items td {
+    padding:10px;
+    border-bottom:1px solid #e2e8f0;
+}
+
+
+.items tbody tr:last-child td {
+    border-bottom:none;
+}
+
+
+.right {
+    text-align:right;
+}
+
+
+
+.total-box {
+
+    margin-top:30px;
+    margin-left:auto;
+    width:250px;
+
+}
+
+
+.total-row {
+
+    display:flex;
+    justify-content:space-between;
+    padding:6px 0;
+
+}
+
+
+
+.total-final {
+
+    border-top:1px solid #cbd5e1;
+    margin-top:10px;
+    padding-top:10px;
+    font-size:16px;
+    font-weight:bold;
+
+}
+
+
+
+
+.note {
+    margin-top:30px;
+    padding:12px;
+    border:1px solid #e2e8f0;
+    border-radius: 10px;
+}
+
+
+
+.small-business {
+
+    margin-top:25px;
+    color:#64748b;
+
+}
+
+
+
+@page {
+    size: A4;
+    margin: 18mm 18mm 35mm 18mm;
+}
+
+
+.footer {
+    position: fixed;
+    bottom: -25mm;
+    left: 0;
+    right: 0;
+
+    padding-top:15px;
+    border-top:1px solid #e2e8f0;
+
+    display:flex;
+    justify-content:space-between;
+
+    font-size:10px;
+    color:#64748b;
+}
+
+
+.footer-title {
+    font-weight:bold;
+    color:#334155;
+    margin-bottom:5px;
+}
+
+
+</style>
+
+</head>
+
+
+<body>
+
+
+<!-- HEADER -->
+
+
+<div class="header">
+
+
+<div>
+
+            {% if company.logo %}
+                <img src="{{ company.logo.url }}" class="logo">
+            {% else %}
+                <h1 class="company-name" style="color: {{ company.color }}">
+                    {{ company.companyname }}
+                </h1>
+
+                {% if company.slogan %}
+                    <p>
+                        {{ company.slogan }}
+                    </p>
+                {% endif %}
+            {% endif %}
+
+
+
+<p style="margin-top:15px">
+{{ company.name }}<br>
+{{ company.street }} · {{ company.zip }} {{ company.city }}
+</p>
+
+
+</div>
+
+
+
+<div style="text-align:right">
+
+
+<div class="invoice-title">
+MAHNUNG
+</div>
+
+
+<table class="info-table">
+    <tr>
+        <td class="label">Mahnungsnummer</td>
+        <td>{{ reminder.reminder_number }}</td>
+    </tr>
+
+    <tr>
+        <td class="label">Mahnungsdatum</td>
+        <td>{{ reminder.issue_date|date:"d.m.Y" }}</td>
+    </tr>
+
+    <tr>
+        <td class="label">Mahnungsstufe</td>
+        <td>{{ reminder.level }}. Mahnung</td>
+    </tr>
+
+    <tr>
+        <td class="label">Ursprüngliches Zahlungsziel</td>
+        <td>{{ reminder.invoice.due_date|date:"d.m.Y" }}</td>
+    </tr>
+
+    <tr>
+        <td class="label">Neues Zahlungsziel</td>
+        <td>{{ reminder.due_date|date:"d.m.Y" }}</td>
+    </tr>
+
+    <tr>
+        <td class="label">Rechnungsnummer</td>
+        <td>{{ reminder.invoice.invoice_number }}</td>
+    </tr>
+</table>
+
+
+</div>
+
+
+</div>
+
+
+
+<div class="divider"></div>
+
+
+
+
+<!-- EMPFÄNGER -->
+
+
+<div>
+
+
+<div class="receiver-title">
+Empfänger
+</div>
+
+
+
+<div class="receiver-name">
+
+{% if reminder.invoice.customer.type == "company" %}
+{{ reminder.invoice.customer.company_name }}
+{% else %}
+{{ reminder.invoice.contact_name }}
+{% endif %}
+
+</div>
+
+
+{% if reminder.invoice.customer.type == "company" %}
+
+<p>
+z.Hd. {{ reminder.invoice.contact_name }}
+</p>
+
+{% endif %}
+
+
+<p style="margin-top:10px">
+
+{{ reminder.invoice.location_street }}<br>
+
+{{ reminder.invoice.location_zip }}
+{{ reminder.invoice.location_city }}
+
+</p>
+
+
+</div>
+
+
+
+
+
+<!-- TITEL -->
+
+
+<div style="margin-top:40px">
+
+
+<div class="invoice-heading"
+style="color:{{ company.color }}">
+
+Mahnung
+
+</div>
+
+
+{% if company.reminder_header_text %}
+
+<p>
+{{ company.reminder_header_text|linebreaksbr }}
+</p>
+
+{% endif %}
+
+
+</div>
+
+
+
+
+<!-- FORDERUNGSÜBERSICHT -->
+
+
+<div class="items-wrapper">
+
+<table class="items">
+
+
+<thead>
+
+<tr>
+
+<th>
+Beschreibung
+</th>
+
+<th class="right">
+Betrag
+</th>
+
+</tr>
+
+</thead>
+
+
+
+<tbody>
+
+
+<tr>
+
+<td>
+Rechnung {{ reminder.invoice.invoice_number }}
+</td>
+
+<td>
+{{ invoice_amount|floatformat:2 }} €
+</td>
+
+</tr>
+
+
+
+{% if previous_reminders or reminder.fee > 0 %}
+
+{% for old_reminder in previous_reminders %}
+
+<tr>
+
+    <td>
+        {{ old_reminder.level }}. Mahnung
+        ({{ old_reminder.issue_date|date:"d.m.Y" }})
+    </td>
+
+    <td>
+        {{ old_reminder.fee|floatformat:2 }} €
+    </td>
+
+</tr>
+
+{% endfor %}
+
+
+<tr>
+
+    <td>
+        Aktuelle Mahngebühr
+    </td>
+
+    <td>
+        {{ reminder.fee|floatformat:2 }} €
+    </td>
+
+</tr>
+
+{% endif %}
+
+
+
+</tbody>
+
+
+</table>
+
+</div>
+
+
+
+
+<!-- GESAMTFORDERUNG -->
+
+
+<div class="total-box">
+
+
+<div class="total-row">
+
+<span>
+Offener Rechnungsbetrag
+</span>
+
+<span>
+{{ invoice_amount|floatformat:2 }} €
+</span>
+
+</div>
+
+
+
+{% if previous_reminders or reminder.fee > 0 %}
+
+<div class="total-row">
+
+<span>
+Mahngebühren
+</span>
+
+<span>
+{{ total_fees|floatformat:2 }} €
+</span>
+
+</div>
+
+{% endif %}
+
+
+
+<div class="total-row total-final">
+
+<span>
+Gesamtforderung
+</span>
+
+
+<span>
+{{ total_due|floatformat:2 }} €
+</span>
+
+
+</div>
+
+
+</div>
+
+
+
+
+
+
+{% if reminder.note %}
+
+<div class="note">
+
+<div class="receiver-title">
+Mahnungshinweis
+</div>
+
+<br>
+
+{{ reminder.note|linebreaksbr }}
+
+</div>
+
+{% endif %}
+
+
+
+
+
+
+
+
+<!-- FOOTER -->
+
+
+<div class="footer">
+
+
+<div>
+
+<div class="footer-title">
+Kontakt
+</div>
+
+{% if company.phone %}
+{{ company.phone }}<br>
+{% endif %}
+
+{% if company.email %}
+{{ company.email }}<br>
+{% endif %}
+
+{% if company.website %}
+{{ company.website }}
+{% endif %}
+
+</div>
+
+
+
+
+<div>
+
+<div class="footer-title">
+Steuern
+</div>
+
+
+{% if company.tax_number %}
+Steuernummer: {{ company.tax_number }}<br>
+{% endif %}
+
+
+{% if company.vat_number %}
+USt-IdNr.: {{ company.vat_number }}
+{% endif %}
+
+
+</div>
+
+
+
+
+
+<div>
+
+<div class="footer-title">
+Bank
+</div>
+
+
+{% if company.bank_name %}
+{{ company.bank_name }}<br>
+{% endif %}
+
+
+{% if company.iban %}
+IBAN: {{ company.iban }}<br>
+{% endif %}
+
+
+{% if company.bic %}
+BIC: {{ company.bic }}
+{% endif %}
+
+
+</div>
+
+
+</div>
+
+
+
+</body>
+
+</html>

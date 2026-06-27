@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}
+{{ project.name }} - Inventar
+{% endblock %}
+
+{% block header_title %}
+Packartikel hinzufügen
+{% endblock %}
+
+{% block header_description %}
+Artikel zur Packliste hinzufügen
+{% endblock %}
+
+{% block content %}
+{% load django_tables2 %}
+<div class="p-6 rounded-xl shadow bg-white dark:bg-slate-800 text-slate-900 dark:text-white transition-colors">
+    <form method="post">
+        {% csrf_token %}
+
+        <div class="overflow-x-auto rounded-xl">
+            {% render_table table %}
+        </div>
+
+        <button
+            type="submit"
+            class="btn mt-4 btn-save">
+            Speichern
+        </button>
+    </form>
+</div>
+
+{% endblock %}

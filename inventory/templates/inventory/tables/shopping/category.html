@@ -1,0 +1,15 @@
+<select
+    name="category"
+    form="shopping-save-form-{{ record.id }}"
+    class="border rounded px-2 py-1 w-full">
+
+    <option value="">---</option>
+
+    {% for c in table.categories %}
+        <option value="{{ c.id }}"
+            {% if record.category_id == c.id %}selected{% endif %}>
+            {{ c.name }}
+        </option>
+    {% endfor %}
+
+</select>

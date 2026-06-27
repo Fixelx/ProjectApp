@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}
+Login
+{% endblock %}
+
+{% block header_title %}
+<div class="flex justify-center">
+    {% if company_settings.logo %}
+        <img src="{{ company_settings.logo.url }}" alt="" class="h-32">
+        
+    {% elif company_settings.companyname %}
+        {{ company_settings.companyname }}
+    {% else %}
+        Projektverwaltung
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block header_description %}
+{% endblock %}
+
+{% block content %}
+
+<div class="flex justify-center items-center min-h-[80vh]">
+
+    <div class="p-6 rounded-xl shadow bg-white dark:bg-slate-800 text-slate-900 dark:text-white transition-colors w-full max-w-md">
+
+        <h1 class="text-3xl font-bold text-center mb-6">
+            Anmelden
+        </h1>
+
+        <form method="post" class="space-y-4">
+            {% csrf_token %}
+
+            {% for field in form %}
+                <div class="space-y-1">
+                    <label class="block text-sm font-medium text-slate-700 dark:text-slate-300">
+                        {{ field.label }}
+                    </label>
+                    <input
+                        type="{{ field.field.widget.input_type }}"
+                        name="{{ field.html_name }}"
+                        id="{{ field.id_for_label }}"
+                        {% if field.value %}value="{{ field.value }}"{% endif %}
+                        class="w-full px-4 py-3 rounded-lg border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                        placeholder="{{ field.label }}"
+                    >
+                    {% if field.errors %}
+                    <p class="text-sm text-red-500">{{ field.errors|join:", " }}</p>
+                    {% endif %}
+                </div>
+            {% endfor %}
+
+            <button
+                type="submit"
+                class="btn w-full btn-action"
+            >
+                Anmelden
+            </button>
+
+        </form>
+
+    </div>
+
+</div>
+
+{% endblock %}

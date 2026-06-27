@@ -1,0 +1,6 @@
+<input
+    type="datetime-local"
+    name="end"
+    form="save-form-{{ record.id }}"
+    value="{% if record.end %}{{ record.end|date:'Y-m-d' }}T{{ record.end|date:'H:i' }}{% endif %}"
+    class="border rounded px-2 py-1">

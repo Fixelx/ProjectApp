@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}
+{{ project.name }} - Inventar
+{% endblock %}
+
+{% block header_title %}
+Einkaufsartikel hinzufügen
+{% endblock %}
+
+{% block header_description %}
+Artikel zur Einkaufsliste hinzufügen
+{% endblock %}
+
+{% block content %}
+
+<div class="p-6 rounded-xl shadow bg-white dark:bg-slate-800 text-slate-900 dark:text-white transition-colors">
+        <form method="post" class="space-y-4">
+
+            {% csrf_token %}
+
+            <div class="space-y-4">
+
+                {{ form.as_p }}
+
+            </div>
+
+                <button
+                    type="submit"
+                    class="btn mt-4 btn-save">
+
+                    Speichern
+
+                </button>
+
+        </form>
+
+    </div>
+
+{% endblock %}

@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block title %}
+Rechnungswesen - Posten
+{% endblock %}
+
+{% block header_title %}
+Posten
+{% endblock %}
+
+{% block header_description %}
+Leistungen und Artikel verwalten
+{% endblock %}
+
+{% block content %}
+{% load django_tables2 %}
+<div class="mb-8">
+    <div class="p-6 rounded-xl shadow bg-white dark:bg-slate-800 text-slate-900 dark:text-white transition-colors">
+        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+            <div>
+                <h2 class="text-xl font-bold">Aktionen</h2>
+                <p class="text-slate-400 text-sm mt-1">
+                    Leistungen und Artikel anlegen
+                </p>
+            </div>
+            <div class="flex flex-col sm:flex-row gap-2">
+                <a href="{% url 'invoices:items_add' %}"
+                class="btn btn-add">
+                    + Posten
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="p-6 rounded-xl shadow bg-white dark:bg-slate-800 text-slate-900 dark:text-white transition-colors mt-8">
+
+    <div class="flex flex-wrap justify-between items-center mb-6">
+
+        <div>
+            <h2 class="text-xl font-bold">
+                Artikel und Leistungen
+            </h2>
+
+            <p class="text-slate-400 text-sm mt-1">
+                Übersicht über alle Artikel und Leistungen
+            </p>
+        </div>
+    </div>
+
+    <div class="overflow-x-auto rounded-xl">
+        {% render_table table %}
+        
+    </div>
+</div>
+{% endblock %}

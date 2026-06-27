@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}
+{{ project.name }} - Finanzen
+{% endblock %}
+
+{% block header_title %}
+Finanzen tracken
+{% endblock %}
+
+{% block header_description %}
+Einnahme oder Ausgabe hinzufügen
+{% endblock %}
+
+{% block content %}
+
+<div class="p-6 rounded-xl shadow bg-white dark:bg-slate-800 text-slate-900 dark:text-white transition-colors">
+
+    <form method="post" enctype="multipart/form-data" class="space-y-4">
+        {% csrf_token %}
+
+        {{ form.as_p }}
+
+        <button class="btn btn-save">
+            Speichern
+        </button>
+
+    </form>
+
+</div>
+
+{% endblock %}

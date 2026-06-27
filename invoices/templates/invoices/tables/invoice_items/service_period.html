@@ -1,0 +1,7 @@
+{% if record.service_period_from %}
+    {{ record.service_period_from|date:"d.m.Y" }}
+{% endif %}
+
+{% if record.service_period_to %}
+    - {{ record.service_period_to|date:"d.m.Y" }}
+{% endif %}

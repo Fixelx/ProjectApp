@@ -1,0 +1,47 @@
+{% load django_tables2 %}
+
+<table {% render_attrs table.attrs %}>
+
+    <thead class="bg-slate-100 dark:bg-slate-700 text-left">
+        <tr>
+            {% for column in table.columns %}
+                <th class="p-3">
+                    {{ column.header }}
+                </th>
+            {% endfor %}
+        </tr>
+    </thead>
+
+
+    <tbody>
+
+        {% for row in table.paginated_rows %}
+
+            <tr class="border-t">
+
+                {% for column, cell in row.items %}
+
+                    <td class="p-3">
+                        {{ cell }}
+                    </td>
+
+                {% endfor %}
+
+            </tr>
+
+        {% empty %}
+
+            <tr class="border-t">
+                <td colspan="{{ table.columns|length }}"
+                    class="p-6 text-center text-slate-400">
+
+                    Keine Daten vorhanden
+
+                </td>
+            </tr>
+
+        {% endfor %}
+
+    </tbody>
+
+</table>

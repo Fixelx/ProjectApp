@@ -1,0 +1,95 @@
+{% load django_tables2 %}
+
+<div class="overflow-x-auto rounded-xl">
+
+<table {% render_attrs table.attrs %}>
+
+    <thead class="bg-slate-100 dark:bg-slate-700 text-left">
+        <tr>
+            <th class="p-3"></th>
+
+            {% for column in table.columns %}
+                <th class="p-3">
+                    {{ column.header }}
+                </th>
+            {% endfor %}
+
+        </tr>
+    </thead>
+
+
+    <tbody>
+
+    {% for row in table.paginated_rows %}
+
+        <tr class="border-t">
+
+            <td class="p-3">
+                <button
+                    type="button"
+                    onclick="toggleItem('{{ table.toggle_prefix }}-{{ row.record.id }}')"
+                    class="font-bold">
+                    ▼
+                </button>
+            </td>
+
+
+            {% for column, cell in row.items %}
+
+                <td class="p-3">
+                    {{ cell }}
+                </td>
+
+            {% endfor %}
+
+        </tr>
+
+
+        {% if table.detail_template %}
+
+        <tr id="{{ table.toggle_prefix }}-{{ row.record.id }}"
+            class="hidden border-t">
+
+            <td colspan="{{ table.columns|length|add:'1' }}"
+                class="p-6">
+
+                {% include table.detail_template with item=row.record categories=table.categories locations=table.locations users=table.users %}
+
+            </td>
+
+        </tr>
+
+        {% endif %}
+
+
+    {% empty %}
+
+        <tr>
+            <td colspan="{{ table.columns|length|add:1 }}"
+                class="p-6 text-center text-slate-400">
+                Keine Daten vorhanden
+            </td>
+        </tr>
+
+    {% endfor %}
+
+    </tbody>
+
+</table>
+
+</div>
+
+
+<script>
+function toggleItem(id) {
+
+    const element = document.getElementById(id);
+
+    if (!element) {
+        console.log("Nicht gefunden:", id);
+        return;
+    }
+
+    element.classList.toggle("hidden");
+}
+</script>

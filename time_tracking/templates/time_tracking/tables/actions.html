@@ -1,0 +1,30 @@
+<div class="flex gap-2">
+
+    <form method="post"
+          action="{% url 'time_tracking:edit' record.project_id record.id %}"
+          id="save-form-{{ record.id }}"
+          class="inline">
+
+        {% csrf_token %}
+
+        <button type="submit"
+                class="btn btn-save">
+            Speichern
+        </button>
+
+    </form>
+
+    <form method="post"
+          action="{% url 'time_tracking:delete' record.project_id record.id %}"
+          class="inline">
+
+        {% csrf_token %}
+
+        <button type="submit"
+                class="btn btn-delete">
+            Löschen
+        </button>
+
+    </form>
+
+</div>

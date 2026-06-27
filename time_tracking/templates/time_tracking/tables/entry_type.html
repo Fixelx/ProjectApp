@@ -1,0 +1,13 @@
+<select
+    name="entry_type"
+    form="save-form-{{ record.id }}"
+    class="border rounded px-2 py-1 w-full">
+
+    {% for value,label in types %}
+        <option value="{{ value }}"
+            {% if record.entry_type == value %}selected{% endif %}>
+            {{ label }}
+        </option>
+    {% endfor %}
+
+</select>

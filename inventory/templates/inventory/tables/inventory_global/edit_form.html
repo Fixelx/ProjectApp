@@ -1,0 +1,155 @@
+<form method="post" action="{% url 'inventory_global:edit' item.id %}">
+    {% csrf_token %}
+
+    <input type="hidden" name="item_id" value="{{ item.id }}">
+
+    <div class="grid md:grid-cols-2 xl:grid-cols-3 gap-4">
+
+        <div>
+            <label class="block text-sm mb-1">
+                Name
+            </label>
+
+            <input
+                type="text"
+                name="name"
+                value="{{ item.name }}"
+                class="border rounded px-3 py-2 w-full">
+        </div>
+
+
+        <div>
+            <label class="block text-sm mb-1">
+                Beschreibung
+            </label>
+
+            <input
+                type="text"
+                name="description"
+                value="{{ item.description }}"
+                class="border rounded px-3 py-2 w-full">
+        </div>
+
+
+        <div>
+            <label class="block text-sm mb-1">
+                Anzahl
+            </label>
+
+            <input
+                type="number"
+                name="quantity"
+                value="{{ item.quantity }}"
+                class="border rounded px-3 py-2 w-full">
+        </div>
+
+
+        <div>
+            <label class="block text-sm mb-1">
+                Kategorie
+            </label>
+
+            <select
+                name="category"
+                class="border rounded px-3 py-2 w-full">
+
+                <option value="">
+                    ---
+                </option>
+
+                {% for c in categories %}
+                    <option
+                        value="{{ c.id }}"
+                        {% if item.category_id == c.id %}selected{% endif %}>
+                        {{ c.name }}
+                    </option>
+                {% endfor %}
+
+            </select>
+        </div>
+
+
+        <div>
+            <label class="block text-sm mb-1">
+                Standort
+            </label>
+
+            <select
+                name="location"
+                class="border rounded px-3 py-2 w-full">
+
+                <option value="">
+                    ---
+                </option>
+
+                {% for l in locations %}
+                    <option
+                        value="{{ l.id }}"
+                        {% if item.location_id == l.id %}selected{% endif %}>
+                        {{ l.name }}
+                    </option>
+                {% endfor %}
+
+            </select>
+        </div>
+
+
+        <div>
+            <label class="block text-sm mb-1">
+                Artikelnummer
+            </label>
+
+            <input
+                type="text"
+                name="article_number"
+                value="{{ item.article_number }}"
+                class="border rounded px-3 py-2 w-full">
+        </div>
+
+
+        <div>
+            <label class="block text-sm mb-1">
+                Verantwortlicher
+            </label>
+
+            <select
+                name="responsible"
+                class="border rounded px-3 py-2 w-full">
+
+                <option value="">
+                    ---
+                </option>
+
+                {% for u in users %}
+                    <option
+                        value="{{ u.id }}"
+                        {% if item.responsible_id == u.id %}selected{% endif %}>
+                        {{ u.get_full_name|default:u.username }}
+                    </option>
+                {% endfor %}
+
+            </select>
+        </div>
+
+    </div>
+
+
+    <div class="mt-5 flex gap-2">
+
+        <button
+            type="submit"
+            class="btn btn-save">
+            Speichern
+        </button>
+
+
+        <button
+            type="submit"
+            formaction="{% url 'inventory_global:delete' item.id %}"
+            class="btn btn-delete">
+            Löschen
+        </button>
+
+    </div>
+
+</form>

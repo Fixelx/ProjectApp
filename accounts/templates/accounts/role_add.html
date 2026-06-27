@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block title %}
+Mitarbeiter
+{% endblock %}
+
+{% block header_title %}
+Rolle hinzufügen
+{% endblock %}
+
+{% block header_description %}
+Neue Rolle anlegen
+{% endblock %}
+
+{% block content %}
+
+<div class="p-6 rounded-xl shadow bg-white dark:bg-slate-800 text-slate-900 dark:text-white transition-colors mb-8">
+
+    <form method="post" enctype="multipart/form-data" class="space-y-4">
+        {% csrf_token %}
+
+        <div class="grid grid-cols-1 gap-4">
+            {{ form.as_p }}
+        </div>
+
+        <button
+            type="submit"
+            class="btn mt-4 btn-save">
+            Speichern
+        </button>
+
+    </form>
+
+</div>
+
+{% endblock %}

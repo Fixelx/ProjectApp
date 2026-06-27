@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block title %}
+{{ project.name }}
+{% endblock %}
+
+
+{% block header_title %}
+    {{ project.name }}
+{% endblock %}
+
+{% block header_description %}
+Projektübersicht und Module
+{% endblock %}
+
+{% block content %}
+
+<!-- MODULE GRID -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+
+    <!-- FINANZEN -->
+    <a href="{% url 'finance:overview' project.id %}" class="p-6 rounded-xl shadow bg-white dark:bg-slate-800 text-slate-900 dark:text-white transition-colors">
+        <div class="text-2xl mb-2">💰</div>
+        <h2 class="text-xl font-bold">Finanzen</h2>
+        <p class="text-slate-400 text-sm mt-1">Einnahmen & Ausgaben</p>
+    </a>
+
+    <!-- KASSE -->
+    <a href="" class="relative p-6 rounded-xl shadow bg-white dark:bg-slate-800 text-slate-900 dark:text-white transition-colors">
+        <div class="absolute top-3 right-3 text-xs font-semibold px-2 py-1 rounded-full text-white" style="background-color: {{ company_settings.color }};">
+            In Arbeit
+        </div>
+        <div class="text-2xl mb-2">🏦</div>
+        <h2 class="text-xl font-bold">Kasse</h2>
+        <p class="text-slate-400 text-sm mt-1">Buchungen vornehmen</p>
+    </a>
+
+    <!-- ZEITERFASSUNG -->
+    <a href="{% url 'time_tracking:overview' project.id %}" class="p-6 rounded-xl shadow bg-white dark:bg-slate-800 text-slate-900 dark:text-white transition-colors">
+        <div class="text-2xl mb-2">⏱</div>
+        <h2 class="text-xl font-bold">Zeiterfassung</h2>
+        <p class="text-slate-400 text-sm mt-1">Arbeitszeiten der Helfer</p>
+    </a>
+
+    <!-- DOKUMENTE -->
+    <a href="{% url 'documents:overview' project.id %}" class="p-6 rounded-xl shadow bg-white dark:bg-slate-800 text-slate-900 dark:text-white transition-colors">
+        <div class="text-2xl mb-2">📁</div>
+        <h2 class="text-xl font-bold">Dokumente</h2>
+        <p class="text-slate-400 text-sm mt-1">Dateien & Bilder</p>
+    </a>
+
+    <!-- LISTE -->
+    <a href="{% url 'inventory:overview' project.id %}" class="p-6 rounded-xl shadow bg-white dark:bg-slate-800 text-slate-900 dark:text-white transition-colors">
+        <div class="text-2xl mb-2">🛒</div>
+        <h2 class="text-xl font-bold">Pack-/Einkaufsliste</h2>
+        <p class="text-slate-400 text-sm mt-1">Vorhandenen & benötigtes Material</p>
+    </a>
+
+    <!-- Projektinformationen -->
+    <a href="{% url 'projects:info' project.id %}" class="p-6 rounded-xl shadow bg-white dark:bg-slate-800 text-slate-900 dark:text-white transition-colors">
+        <div class="text-2xl mb-2">ℹ️</div>
+        <h2 class="text-xl font-bold">Projektinformationen</h2>
+        <p class="text-slate-400 text-sm mt-1">Standorte & Ansprechpartner</p>
+    </a>
+</div>
+
+<!-- OPTIONAL INFO BOX -->
+<div class="p-6 rounded-xl shadow mb-8 bg-white dark:bg-slate-800 text-slate-900 dark:text-white transition-colors">
+
+    <h2 class="text-xl font-bold">
+        Zusammenfassung
+    </h2>
+
+    <p class="text-slate-400 text-sm mt-1">
+        folgt
+    </p>
+
+</div>
+
+{% endblock %}
