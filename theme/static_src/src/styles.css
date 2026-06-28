@@ -22,6 +22,13 @@
         opacity: 0.8;
     }
 
+    .company-border {
+        @apply border border-slate-100 dark:border-slate-700;
+    }
+
+    .company-border:hover {
+        border-color: color-mix(in srgb, var(--company-color) 40%, transparent);
+    }
 
     .btn {
         @apply inline-flex items-center justify-center
