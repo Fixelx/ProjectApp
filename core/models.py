@@ -5,6 +5,7 @@ class CompanySetting(models.Model):
     companyname = models.CharField(max_length=255,verbose_name="Firmenname")
     name = models.CharField(max_length=255,verbose_name="Geschäftsführer")
     logo = models.ImageField(upload_to="company/",blank=True,null=True,verbose_name="Logo")
+    favicon = models.ImageField(upload_to="company/",blank=True,null=True,verbose_name="Favicon")
     slogan = models.CharField(max_length=255,blank=True,verbose_name="Slogan")
     color = models.CharField(max_length=20,default="#0f172a",verbose_name="Farbe")
     street = models.CharField(max_length=255,verbose_name="Straße")

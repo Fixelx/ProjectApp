@@ -42,7 +42,7 @@ class Role(models.Model):
     projects_inventory_shopping_add = models.BooleanField(default=False, verbose_name="Einkauf hinzufügen", help_text="Benutzer darf Einkaufspositionen erstellen.")
     projects_inventory_shopping_edit = models.BooleanField(default=False, verbose_name="Einkauf bearbeiten", help_text="Benutzer darf Einkaufspositionen ändern.")
     projects_inventory_shopping_delete = models.BooleanField(default=False, verbose_name="Einkauf löschen", help_text="Benutzer darf Einkaufspositionen löschen.")
-    #projects_inventory_shopping_buy = models.BooleanField(default=False, verbose_name="Einkäufe durchführen", help_text="Benutzer darf Einkäufe als erledigt markieren.")
+    projects_inventory_shopping_to_expense = models.BooleanField(default=False, verbose_name="Einkäufe durchführen", help_text="Benutzer darf Einkäufe als erledigt markieren.")
 
 
     # =====================
@@ -58,8 +58,10 @@ class Role(models.Model):
     # Rechnungen
     # =====================
     invoices_view = models.BooleanField(default=False, verbose_name="Rechnungsbereich anzeigen", help_text="Benutzer darf Rechnungen verwalten.")
-
+    invoices_info = models.BooleanField(default=False, verbose_name="Statistiken ansehen", help_text="Benutzer darf Statistiken sehen.")
+    
     invoices_customers_view = models.BooleanField(default=False, verbose_name="Kunden anzeigen", help_text="Benutzer darf Kunden sehen.")
+    invoices_customers_info = models.BooleanField(default=False, verbose_name="Kundenstatistiken ansehen", help_text="Benutzer darf Kundenstatistiken sehen.")
     invoices_customers_detail_view = models.BooleanField(default=False, verbose_name="Kundendetails anzeigen", help_text="Benutzer darf Details des Kunden sehen.")
     invoices_customers_add = models.BooleanField(default=False, verbose_name="Kunden erstellen", help_text="Benutzer darf Kunden anlegen.")
     invoices_customers_edit = models.BooleanField(default=False, verbose_name="Kunden bearbeiten", help_text="Benutzer darf Kunden ändern.")
@@ -72,6 +74,7 @@ class Role(models.Model):
     invoices_items_delete = models.BooleanField(default=False, verbose_name="Artikel löschen", help_text="Benutzer darf Artikel löschen.")
 
     invoices_invoices_view = models.BooleanField(default=False, verbose_name="Rechnungen anzeigen", help_text="Benutzer darf Rechnungen sehen.")
+    invoices_invoices_info = models.BooleanField(default=False, verbose_name="Rechnungsstatistiken ansehen", help_text="Benutzer darf Rechnungsstatistiken sehen.")
     invoices_invoices_project_add = models.BooleanField(default=False, verbose_name="Projekt-Rechnung erstellen", help_text="Benutzer darf Rechnungen aus Projekten erstellen.")
     invoices_invoices_customer_add = models.BooleanField(default=False, verbose_name="Kunden-Rechnung erstellen", help_text="Benutzer darf Rechnungen für Kunden erstellen.")
     invoices_invoices_invoices_view = models.BooleanField(default=False, verbose_name="Rechnungsdetails anzeigen", help_text="Benutzer darf Rechnungsdetails sehen.")
@@ -82,27 +85,26 @@ class Role(models.Model):
     invoices_invoices_invoices_cancel = models.BooleanField(default=False, verbose_name="Rechnung stornieren", help_text="Benutzer darf Rechnungen stornieren.")
     invoices_invoices_invoices_paid = models.BooleanField(default=False, verbose_name="Rechnung auf bezahlt setzen", help_text="Benutzer darf Rechnungsstatus ändern.")
     invoices_invoices_invoices_delete = models.BooleanField(default=False, verbose_name="Rechnungen löschen", help_text="Benutzer darf Rechnungen löschen.")
-    invoices_invoices_invoices_overdue = models.BooleanField(default=False, verbose_name="Überfällige Rechnungen anzeigen", help_text="Benutzer darf überfällige Rechnungen einsehen.")
 
     invoices_offers_view = models.BooleanField(default=False, verbose_name="Angebote anzeigen", help_text="Benutzer darf Angebote sehen.")
+    invoices_offers_info = models.BooleanField(default=False, verbose_name="Angebotsstatistiken ansehen", help_text="Benutzer darf Angebotsstatistiken sehen.")
     invoices_offers_add = models.BooleanField(default=False, verbose_name="Angebot erstellen", help_text="Benutzer darf Angebote für Kunden erstellen.")
     invoices_offers_offers_view = models.BooleanField(default=False, verbose_name="Angebotsdetails anzeigen", help_text="Benutzer darf Angebotsdetails sehen.")
     invoices_offers_offers_item_add = models.BooleanField(default=False, verbose_name="Angebotsposition hinzufügen", help_text="Benutzer darf Positionen hinzufügen.")
     invoices_offers_offers_item_delete = models.BooleanField(default=False, verbose_name="Angebotsposition löschen", help_text="Benutzer darf Positionen löschen.")
     invoices_offers_offers_preview = models.BooleanField(default=False, verbose_name="Angebotsvorschau anzeigen", help_text="Benutzer darf Vorschauen öffnen.")
     invoices_offers_offers_download = models.BooleanField(default=False, verbose_name="Angebot herunterladen", help_text="Benutzer darf Angebote herunterladen.")
-    invoices_offers_offers_status = models.BooleanField(default=False, verbose_name="Angebotsstatus bearbeiten", help_text="Benutzer darf Angebotsstatus ändern.")
     invoices_offers_offers_delete = models.BooleanField(default=False, verbose_name="Angebote löschen", help_text="Benutzer darf Angebote löschen.")
     
     invoices_reminders_view = models.BooleanField(default=False, verbose_name="Mahnungen anzeigen", help_text="Benutzer darf Mahnungen einsehen.")
+    invoices_reminders_info = models.BooleanField(default=False, verbose_name="Mahnungsstatistiken ansehen", help_text="Benutzer darf Mahnungsstatistiken sehen.")
     invoices_reminders_add = models.BooleanField(default=False, verbose_name="Mahnungen hinzufügen", help_text="Benutzer darf Mahnungen erstellen.")
     invoices_reminders_reminders_view = models.BooleanField(default=False, verbose_name="Erinnerungen anzeigen", help_text="Benutzer darf Zahlungserinnerungen einsehen.")
     invoices_reminders_reminders_cancel = models.BooleanField(default=False, verbose_name="Erinnerungen stornieren", help_text="Benutzer darf Zahlungserinnerungen stornieren.")
     invoices_reminders_reminders_delete = models.BooleanField(default=False, verbose_name="Erinnerungen löschen", help_text="Benutzer darf Zahlungserinnerungen löschen.")
     invoices_reminders_reminders_download = models.BooleanField(default=False, verbose_name="Erinnerungen herunterladen", help_text="Benutzer darf Zahlungserinnerungen herunterladen.")
-    invoices_reminders_reminders_paid = models.BooleanField(default=False, verbose_name="Erinnerungen als bezahlt markieren", help_text="Benutzer darf Zahlungserinnerungen als bezahlt markieren.")
-    invoices_reminders_reminders_expire = models.BooleanField(default=False, verbose_name="Erinnerungen ablaufen lassen", help_text="Benutzer darf Zahlungserinnerungen als abgelaufen markieren.")
 
+    invoices_payments_view = models.BooleanField(default=False, verbose_name="Zahlungen anzeigen", help_text="Benutzer darf Zahlungen einsehen.")
     # =====================
     # Benutzerverwaltung
     # =====================

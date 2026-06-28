@@ -149,16 +149,15 @@ table {
 
 
 .right {
-    text-align:right;
+    text-align: right !important;
 }
-
 
 
 .total-box {
 
     margin-top:30px;
     margin-left:auto;
-    width:250px;
+    width:300px;
 
 }
 
@@ -178,7 +177,7 @@ table {
     border-top:1px solid #cbd5e1;
     margin-top:10px;
     padding-top:10px;
-    font-size:16px;
+    font-size:14px;
     font-weight:bold;
 
 }
@@ -440,7 +439,7 @@ Betrag
 Rechnung {{ reminder.invoice.invoice_number }}
 </td>
 
-<td>
+<td class="right">
 {{ invoice_amount|floatformat:2 }} €
 </td>
 
@@ -459,7 +458,7 @@ Rechnung {{ reminder.invoice.invoice_number }}
         ({{ old_reminder.issue_date|date:"d.m.Y" }})
     </td>
 
-    <td>
+    <td class="right">
         {{ old_reminder.fee|floatformat:2 }} €
     </td>
 
@@ -474,13 +473,39 @@ Rechnung {{ reminder.invoice.invoice_number }}
         Aktuelle Mahngebühr
     </td>
 
-    <td>
+    <td class="right">
         {{ reminder.fee|floatformat:2 }} €
     </td>
 
 </tr>
 
 {% endif %}
+
+
+
+{% if payments %}
+
+{% for payment in payments %}
+
+<tr>
+
+    <td>
+        Zahlung vom {{ payment.date|date:"d.m.Y" }}
+        {% if payment.payment_method %}
+            ({{ payment.payment_method }})
+        {% endif %}
+    </td>
+
+    <td class="right">
+        - {{ payment.amount|floatformat:2 }} €
+    </td>
+
+</tr>
+
+{% endfor %}
+
+{% endif %}
+
 
 
 
@@ -494,11 +519,19 @@ Rechnung {{ reminder.invoice.invoice_number }}
 
 
 
+
+
+
+
+
+
+
+
+
+
 <!-- GESAMTFORDERUNG -->
 
-
 <div class="total-box">
-
 
 <div class="total-row">
 
@@ -511,7 +544,6 @@ Offener Rechnungsbetrag
 </span>
 
 </div>
-
 
 
 {% if previous_reminders or reminder.fee > 0 %}
@@ -531,23 +563,36 @@ Mahngebühren
 {% endif %}
 
 
+<div class="total-row">
+
+<span>
+Bereits bezahlt
+</span>
+
+<span>
+- {{ total_paid|floatformat:2 }} €
+</span>
+
+</div>
+
 
 <div class="total-row total-final">
 
 <span>
-Gesamtforderung
+Gesamt
 </span>
-
 
 <span>
-{{ total_due|floatformat:2 }} €
+{{ open_amount|floatformat:2 }} €
 </span>
 
+</div>
 
 </div>
 
 
-</div>
+
+
 
 
 

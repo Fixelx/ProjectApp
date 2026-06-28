@@ -1,7 +1,7 @@
 <form
     id="shopping-save-form-{{ record.id }}"
     method="post"
-    action="{% url 'inventory:shopping_edit' table.project.id record.id %}">
+    action="{% url 'inventory:shopping_edit' shopping_table.project.id record.id %}">
 
     {% csrf_token %}
 
@@ -22,7 +22,7 @@
         <button
             type="submit"
             form="shopping-save-form-{{ record.id }}"
-            formaction="{% url 'inventory:shopping_delete' table.project.id record.id %}"
+            formaction="{% url 'inventory:shopping_delete' shopping_table.project.id record.id %}"
             class="btn btn-delete">
             Löschen
         </button>

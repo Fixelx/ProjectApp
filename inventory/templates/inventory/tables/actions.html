@@ -10,20 +10,20 @@
         name="item_id"
         value="{{ record.id }}"
         form="save-form-{{ record.id }}">
+    <div class="flex gap-2">
+        <button
+            type="submit"
+            form="save-form-{{ record.id }}"
+            class="btn btn-save">
+            Speichern
+        </button>
 
-    <button
-        type="submit"
-        form="save-form-{{ record.id }}"
-        class="btn btn-save">
-        Speichern
-    </button>
-
-    <button
-        type="submit"
-        form="save-form-{{ record.id }}"
-        formaction="{% url 'inventory:delete' project.id record.id %}"
-        class="btn btn-delete">
-        Löschen
-    </button>
-
+        <button
+            type="submit"
+            form="save-form-{{ record.id }}"
+            formaction="{% url 'inventory:delete' project.id record.id %}"
+            class="btn btn-delete">
+            Löschen
+        </button>
+    </div>
 </form>

@@ -13,4 +13,6 @@ urlpatterns = [
 
     path("<int:project_id>/inventory/delete/<int:item_id>/", views.inventory_delete, name="delete"),
     path("<int:project_id>/inventory/shopping-delete/<int:item_id>/", views.shopping_delete, name="shopping_delete"),
+
+    path("<int:project_id>/inventory/shopping-to-expense/", views.shopping_to_expense, name="shopping_to_expense"),
 ]

@@ -158,7 +158,7 @@ table {
 
     margin-top:30px;
     margin-left:auto;
-    width:250px;
+    width: 300px;
 
 }
 
@@ -178,7 +178,7 @@ table {
     border-top:1px solid #cbd5e1;
     margin-top:10px;
     padding-top:10px;
-    font-size:16px;
+    font-size:14px;
     font-weight:bold;
 
 }
@@ -454,7 +454,7 @@ Preis
 </th>
 
 
-{% if not company.is_small_business %}
+{% if not invoice.is_small_business %}
 
 <th class="left">
 Steuer
@@ -518,7 +518,7 @@ Gesamt
 </td>
 
 
-{% if not company.is_small_business %}
+{% if not invoice.is_small_business %}
 
 <td class="left">
 {{ item.unit_tax_rate|floatformat:0 }} %
@@ -569,7 +569,7 @@ Netto
 
 
 
-{% if not company.is_small_business %}
+{% if not invoice.is_small_business %}
 {% for tax_rate,tax_amount in tax_summary.items %}
 
 <div class="total-row">
@@ -603,7 +603,7 @@ Gesamt
 
 <span>
 
-{% if company.is_small_business %}
+{% if invoice.is_small_business %}
 {{ total_net|floatformat:2 }}
 {% else %}
 {{ total_gross|floatformat:2 }}
@@ -644,7 +644,7 @@ Rechnungshinweis
 
 
 
-{% if company.is_small_business %}
+{% if invoice.is_small_business %}
 
 <div class="note">
 

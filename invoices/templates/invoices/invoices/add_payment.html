@@ -1,0 +1,249 @@
+{% extends "base.html" %}
+
+{% block title %}Rechnungswesen - Rechnungen{% endblock %}
+
+{% block header_title %}
+Zahlung erfassen
+{% endblock %}
+
+{% block header_description %}
+Zahlung für Rechnung {{ invoice.invoice_number }} hinzufügen
+{% endblock %}
+
+
+{% block content %}
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- PAYMENT FORM -->
+    <div class="lg:col-span-2">
+        <div class="p-6 rounded-xl shadow bg-white dark:bg-slate-800 text-slate-900 dark:text-white transition-colors">
+
+
+
+            <form method="post" enctype="multipart/form-data" class="space-y-4">
+                {% csrf_token %}
+
+                {{ form.as_p }}
+
+                    <button class="btn btn-save">
+                        Speichern
+                    </button>
+            </form>
+
+
+        </div>
+    </div>
+
+
+    <!-- PAYMENT SUMMARY -->
+    <div class="lg:col-span-1">
+
+        <div class="bg-white dark:bg-slate-800 rounded-xl shadow p-6 font-mono text-sm">
+
+            <!-- HEADER -->
+            <div class="text-center">
+
+                <h2 class="text-lg font-bold">
+                    Zahlungsübersicht
+                </h2>
+
+                <p class="text-xs text-slate-400 mt-1">
+                    Rechnung {{ invoice.invoice_number }}
+                </p>
+
+            </div>
+
+
+            <div class="border-t border-dashed border-slate-300 dark:border-slate-600 my-5"></div>
+
+
+            <!-- RECHNUNG -->
+            <div class="space-y-2">
+
+
+                {% if not invoice.is_small_business %}
+
+                    <div class="flex justify-between">
+                        <span class="text-slate-400">
+                            Netto
+                        </span>
+
+                        <span>
+                            {{ invoice.total_net|floatformat:2 }} €
+                        </span>
+                    </div>
+
+
+                    <div class="flex justify-between">
+                        <span class="text-slate-400">
+                            Umsatzsteuer
+                        </span>
+
+                        <span>
+                            {{ invoice.total_tax|floatformat:2 }} €
+                        </span>
+                    </div>
+
+
+                {% endif %}
+
+
+                <div class="flex justify-between font-semibold">
+                    <span>
+                        Rechnungsbetrag
+                    </span>
+
+                    <span>
+                        {{ invoice.total_amount|floatformat:2 }} €
+                    </span>
+                </div>
+
+
+            </div>
+
+
+
+            <!-- MAHNUNGEN -->
+            {% if invoice.reminder_amount > 0 %}
+
+            <div class="border-t border-dashed border-slate-300 dark:border-slate-600 my-5"></div>
+
+
+            <div class="space-y-2">
+
+                <div class="flex justify-between text-red-600">
+
+                    <span>
+                        Mahngebühren
+                    </span>
+
+                    <span>
+                        + {{ invoice.reminder_amount|floatformat:2 }} €
+                    </span>
+
+                </div>
+
+
+                {% for reminder in invoice.reminders.all %}
+
+                    {% if reminder.status != "canceled" %}
+
+                    <div class="flex justify-between text-xs text-slate-400">
+
+                        <span>
+                            {{ reminder.level }}. Mahnung
+                        </span>
+
+                        <span>
+                            {{ reminder.fee|floatformat:2 }} €
+                        </span>
+
+                    </div>
+
+                    {% endif %}
+
+                {% endfor %}
+
+
+            </div>
+
+            {% endif %}
+
+
+
+            <!-- GESAMT -->
+            <div class="border-t border-dashed border-slate-300 dark:border-slate-600 my-5"></div>
+
+
+            <div class="flex justify-between text-lg font-bold">
+
+                <span>
+                    Gesamtforderung
+                </span>
+
+                <span>
+                    {{ invoice.total_with_reminders|floatformat:2 }} €
+                </span>
+
+            </div>
+
+
+
+            <!-- ZAHLUNGEN -->
+            <div class="mt-4 space-y-2">
+
+
+                <div class="flex justify-between text-green-600">
+
+                    <span>
+                        Bereits bezahlt
+                    </span>
+
+                    <span>
+                        - {{ invoice.paid_amount|floatformat:2 }} €
+                    </span>
+
+                </div>
+
+
+
+                {% for payment in invoice.payments.all %}
+
+                <div class="flex justify-between text-xs text-slate-400">
+
+                    <span>
+                        Zahlung {{ payment.date|date:"d.m.Y" }}
+                    </span>
+
+                    <span>
+                        {{ payment.amount|floatformat:2 }} €
+                    </span>
+
+                </div>
+
+                {% endfor %}
+
+
+            </div>
+
+
+
+            <!-- OFFEN -->
+            <div class="border-t border-dashed border-slate-300 dark:border-slate-600 my-5"></div>
+
+
+            <div class="bg-slate-100 dark:bg-slate-700 rounded-xl p-4 text-center">
+
+                <p class="text-xs uppercase text-slate-400">
+                    Offener Betrag
+                </p>
+
+
+                <p class="text-3xl font-bold text-red-600 mt-1">
+
+                    {{ invoice.open_amount|floatformat:2 }} €
+
+                </p>
+
+            </div>
+
+
+
+            <!-- FOOTER -->
+            <div class="border-t border-dashed border-slate-300 dark:border-slate-600 my-5"></div>
+
+
+            <div class="text-center text-xs text-slate-400">
+
+                Zahlungserfassung
+
+            </div>
+
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

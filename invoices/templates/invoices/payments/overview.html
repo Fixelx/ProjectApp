@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block title %}Rechnungswesen - Zahlungen{% endblock %}
+
+{% block header_title %}Zahlungen{% endblock %}
+{% block header_description %}Zahlungsvorgänge verfolgen{% endblock %}
+
+{% block content %}
+{% load django_tables2 %}
+<div class="p-6 rounded-xl shadow bg-white dark:bg-slate-800 text-slate-900 dark:text-white transition-colors">
+    <div class="mb-6">
+        <h2 class="text-lg font-bold">Zahlungen</h2>
+        <p class="text-slate-400 text-sm mt-1">Alle Zahlungsvorgänge</p>
+    </div>
+    <div class="overflow-x-auto rounded-xl">
+        {% render_table table %}
+    </div>
+</div>
+
+{% endblock %}

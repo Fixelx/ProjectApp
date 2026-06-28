@@ -9,6 +9,9 @@ from django.db.models import Sum, Value, F
 from django_tables2 import RequestConfig
 from .tables import ProjectInventoryItemTable, ShoppingItemTable, InventoryAddTable, InventoryGlobalTable
 from django.db.models.functions import Coalesce
+import json 
+from collections import Counter
+from django.utils import timezone
 
 @login_required
 @permission_required("projects_inventory_inventory_view")
@@ -428,4 +431,94 @@ def inventory_global_edit(request, item_id):
             "locations": InventoryLocation.objects.all(),
             "users": User.objects.order_by("username"),
         }
+    )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+@login_required
+@permission_required("projects_inventory_shopping_to_expense")
+def shopping_to_expense(request, project_id):
+
+    ids = request.POST.getlist("selection")
+
+    items = ShoppingItem.objects.filter(pk__in=ids)
+
+    data = []
+    total_amount = 0
+    categories = []
+    suppliers = []
+
+    for item in items:
+
+        total_amount += (item.quantity * item.price)
+
+        if item.category:
+            categories.append(item.category.id)
+
+        if item.supplier:
+            suppliers.append(item.supplier.id)
+
+        data.append({
+            "name": item.name,
+            "quantity": item.quantity,
+            "price": str(item.price),
+            "supplier": str(item.supplier) if item.supplier else None,
+            "category": str(item.category) if item.category else None,
+            "description": item.description,
+        })
+
+    most_category = (
+        Counter(categories).most_common(1)[0][0]
+        if categories else None
+    )
+
+    most_supplier = (
+        Counter(suppliers).most_common(1)[0][0]
+        if suppliers else None
+    )
+
+    request.session["expense_initial"] = {
+        "name": "Einkauf vom " + timezone.now().strftime("%d.%m.%Y"),
+        "amount": str(total_amount),
+        "date": timezone.now().strftime("%Y-%m-%dT%H:%M"),
+        "category": most_category,
+        "supplier": most_supplier,
+        "note": json.dumps(
+            data,
+            ensure_ascii=False,
+            indent=2
+        )
+    }
+
+    request.session["shopping_item_ids"] = list(
+        items.values_list("id", flat=True)
+    )
+
+    return redirect(
+        "finance:add_expense",
+        project_id=project_id
     )

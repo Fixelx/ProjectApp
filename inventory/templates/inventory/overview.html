@@ -18,7 +18,7 @@ Vorhandenen & benötigtes Material
     <div class="p-6 rounded-xl shadow bg-white dark:bg-slate-800 text-slate-900 dark:text-white transition-colors">
         <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
             <div>
-                <h2 class="text-xl font-bold">Aktionen</h2>
+                <h2 class="text-lg font-bold">Aktionen</h2>
                 <p class="text-slate-400 text-sm mt-1">Artikel zur Packliste oder Einkaufsliste hinzufügen</p>
             </div>
 
@@ -34,7 +34,7 @@ Vorhandenen & benötigtes Material
 <div class="p-6 rounded-xl shadow bg-white dark:bg-slate-800 text-slate-900 dark:text-white transition-colors">
 
     <div class="mb-6">
-        <h2 class="text-xl font-bold">Packliste</h2>
+        <h2 class="text-lg font-bold">Packliste</h2>
         <p class="text-slate-400 text-sm mt-1">Vorhandene und benötigte Artikel</p>
     </div>
 
@@ -53,7 +53,7 @@ Vorhandenen & benötigtes Material
     <div class="flex flex-wrap justify-between items-center mb-6">
 
         <div>
-            <h2 class="text-xl font-bold">
+            <h2 class="text-lg font-bold">
                 Einkaufsliste
             </h2>
 
@@ -64,9 +64,13 @@ Vorhandenen & benötigtes Material
     </div>
 
     <div class="overflow-x-auto rounded-xl">
-
+        <form id="bulk-shopping-form" method="post" action="{% url 'inventory:shopping_to_expense' project.id %}" class="rounded-xl">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-action mb-2">
+                Zu Ausgabe konvertieren
+            </button>
+        </form>
         {% render_table shopping_table %}
-
     </div>
 
 </div>

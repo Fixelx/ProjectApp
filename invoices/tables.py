@@ -1,8 +1,42 @@
 import django_tables2 as tables
-from .models import Item, Customer, Reminder, Invoice, InvoiceItem, Offer, OfferItem
+from .models import Item, Customer, Reminder, Invoice, InvoiceItem, Offer, OfferItem, InvoicePayment
+
+
+
+class InvoicePaymentTable(tables.Table):
+    invoice = tables.Column(
+        verbose_name="Rechnung"
+    )
+    amount = tables.Column(
+        verbose_name="Betrag"
+    )
+    date = tables.DateColumn(
+        format="d.m.Y",
+        verbose_name="Datum"
+    )
+    payment_method = tables.Column(
+        verbose_name="Zahlungsmethode"
+    )
+    created_by = tables.Column(
+        verbose_name="Erfasst von"
+    )
+    class Meta:
+        model = InvoicePayment
+        fields = [
+            "invoice",
+            "amount",
+            "date",
+            "payment_method",
+            "created_by",
+        ]
+        attrs = {
+            "class": "w-full text-sm"
+        }
+
+
+
 
 class OfferItemTable(tables.Table):
-
     unit_price_net = tables.TemplateColumn(
         template_name="invoices/tables/offer_items/unit_price.html",
         verbose_name="Einzelpreis",
@@ -246,55 +280,30 @@ class ReminderTable(tables.Table):
         }
 
 class ItemTable(tables.Table):
-    item_type = tables.TemplateColumn(
-        template_name="invoices/tables/items/item_type.html",
-        verbose_name="Typ",
-        orderable=False
-    )
+    toggle_prefix = "item"
 
-    description = tables.TemplateColumn(
-        template_name="invoices/tables/items/description.html",
-        verbose_name="Beschreibung",
-        orderable=False
+    detail_template = (
+        "invoices/tables/items/detail.html"
     )
-
-    unit = tables.TemplateColumn(
-        template_name="invoices/tables/items/unit.html",
-        verbose_name="Einheit",
-        orderable=False
-    )
-
-    price_net = tables.TemplateColumn(
-        template_name="invoices/tables/items/price_net.html",
-        verbose_name="Preis Netto",
-        orderable=False
-    )
-
-    tax_rate = tables.TemplateColumn(
-        template_name="invoices/tables/items/tax_rate.html",
-        verbose_name="MwSt. Satz (%)",
-        orderable=False
-    )
-
-    actions = tables.TemplateColumn(
-        template_name="invoices/tables/items/actions.html",
-        verbose_name="Aktion",
-        orderable=False
-    )
-
 
     class Meta:
         model = Item
+
+        template_name = (
+            "django_tables2/table_toggle.html"
+        )
+
         fields = (
             "item_type",
             "description",
+            "category",
             "unit",
             "price_net",
             "tax_rate",
-            "actions",
         )
+
         attrs = {
-            "class": "w-full text-sm min-w-[700px]"
+            "class": "w-full text-sm min-w-[900px]",
         }
 
 

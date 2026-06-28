@@ -1,8 +1,8 @@
 from django.contrib.auth.decorators import login_required
 from accounts.decorators import permission_required
 from django.shortcuts import render, redirect, get_object_or_404
-from .models import Customer, CustomerContact, CustomerLocation, Item, Invoice, InvoiceItem, Unit, Offer, OfferItem, Reminder
-from .forms import CustomerForm, ItemForm, CustomerInvoiceForm, ProjectInvoiceForm, InvoiceItemForm, OfferForm, OfferItemForm, ReminderForm
+from .models import Customer, CustomerContact, CustomerLocation, Item, Invoice, InvoiceItem, Unit, Offer, OfferItem, Reminder, InvoicePaymentAllocation, InvoicePayment
+from .forms import CustomerForm, ItemForm, CustomerInvoiceForm, ProjectInvoiceForm, InvoiceItemForm, OfferForm, OfferItemForm, ReminderForm, InvoicePaymentForm
 from datetime import date
 from projects.models import Project 
 from django.http import JsonResponse, FileResponse
@@ -18,8 +18,9 @@ from django.utils import timezone
 from weasyprint import HTML
 import io
 from django.db.models import Prefetch, Sum
-from .tables import ItemTable, CustomerTable, CustomerArchivedTable, ReminderTable, InvoiceTable, InvoiceItemTable, OfferTable, OfferItemTable
+from .tables import ItemTable, CustomerTable, CustomerArchivedTable, ReminderTable, InvoiceTable, InvoiceItemTable, OfferTable, OfferItemTable, InvoicePaymentTable
 from django_tables2 import RequestConfig
+from finance.models import Category, Supplier
 
 def generate_document_number(template, number):
     today = date.today()
@@ -416,6 +417,8 @@ def items_overview(request):
     table = ItemTable(items)
     table.types = Item.ItemType.choices
     table.units = Unit.objects.order_by("name")
+    table.categories = Category.objects.order_by("name")
+    table.suppliers = Supplier.objects.order_by("name")
 
     RequestConfig(
         request,
@@ -450,11 +453,12 @@ def items_add(request):
 @login_required
 @permission_required("invoices_items_edit")
 def items_edit(request, item_id):
-
     if request.method != "POST":
+        print("Invalid request method for items_edit")
         return redirect(
             "invoices:items_overview"
         )
+
 
 
     item = get_object_or_404(
@@ -467,7 +471,8 @@ def items_edit(request, item_id):
         request.POST,
         instance=item
     )
-
+    if not form.is_valid():
+        print(form.errors.as_json())
 
     if form.is_valid():
         form.save()
@@ -751,11 +756,12 @@ def ajax_invoice_item_data(request):
 @login_required
 @permission_required("invoices_invoices_view")
 def invoices_invoices_overview(request):
+    status = request.GET.get("status")
 
-    invoices = Invoice.objects.select_related(
-        "customer",
-        "project"
-    ).all()
+    invoices = Invoice.objects.select_related("customer", "project").all()
+
+    if status:
+        invoices = invoices.filter(status=status)
 
     table = InvoiceTable(invoices)
 
@@ -1174,7 +1180,11 @@ def invoices_download(request, invoice_id):
     )
     number_settings.invoice_next_number += 1
     number_settings.save(update_fields=["invoice_next_number"])
-    invoice.save(update_fields=["invoice_number"])
+
+    company = CompanySetting.objects.first()
+    invoice.is_small_business = company.is_small_business
+
+    invoice.save(update_fields=["invoice_number", "is_small_business"])
 
     # ==========================
     # PDF HTML
@@ -1290,40 +1300,87 @@ def invoices_cancel(request, invoice_id):
         id=invoice_id,
     )
 
-    if invoice.status == "canceled" and invoice.pdf_canceled_file:
+
+    # ==========================
+    # Existierendes Storno zurückgeben
+    # ==========================
+
+    if invoice.status == Invoice.Status.CANCELED and invoice.pdf_canceled_file:
+
         return FileResponse(
             invoice.pdf_canceled_file.open("rb"),
             as_attachment=True,
             filename=invoice.pdf_canceled_file.name.split("/")[-1],
         )
-    
+
+
+    # ==========================
+    # Nur finale Rechnungen stornierbar
+    # ==========================
+
+    if invoice.status not in [
+        Invoice.Status.SENT,
+        Invoice.Status.PAID,
+        Invoice.Status.OVERDUE,
+    ]:
+        return redirect(
+            "invoices:invoices_detail",
+            invoice.id,
+        )
+
+
     company = CompanySetting.objects.first()
     number_settings = company.number_settings
+
+
+    # ==========================
+    # Stornonummer
+    # ==========================
 
     invoice.cancel_number = generate_document_number(
         number_settings.cancel_format,
         number_settings.cancel_next_number,
     )
+
+
     number_settings.cancel_next_number += 1
+
     number_settings.save(
         update_fields=[
             "cancel_next_number"
         ]
     )
 
-    if invoice.status not in ["sent", "paid"]:
-        return redirect(
-            "invoices:invoices_detail",
-            invoice.id,
-        )
+
+    # ==========================
+    # Positionen
+    # ==========================
 
     items = invoice.items.all()
 
+
     # ==========================
-    # Summen
+    # Bereits bezahlt
     # ==========================
 
-    total_net = Decimal("0.00")
+    paid_amount = invoice.paid_amount
+
+
+    # ==========================
+    # Rückerstattung berechnen
+    # ==========================
+
+    refund_amount = min(
+        paid_amount,
+        invoice.total_amount
+    )
+
+
+    show_service_date = any(
+        item.service_period_from
+        for item in items
+    )
+
 
     tax_summary = defaultdict(
         lambda: Decimal("0.00")
@@ -1331,42 +1388,19 @@ def invoices_cancel(request, invoice_id):
 
     for item in items:
 
-        item_net = Decimal(
-            str(item.calculated_total_net)
-        )
-
-        total_net += item_net
-
-        tax_rate = Decimal(
-            str(item.unit_tax_rate)
-        )
+        item_net = item.calculated_total_net
 
         tax_amount = (
             item_net *
-            tax_rate /
+            item.unit_tax_rate /
             Decimal("100")
         )
 
-        tax_summary[tax_rate] += tax_amount
+        tax_summary[item.unit_tax_rate] += tax_amount
 
-    total_tax = sum(
-        tax_summary.values(),
-        Decimal("0.00")
-    )
-
-    total_gross = (
-        total_net +
-        total_tax
-    )
-
-    company = CompanySetting.objects.first()
-
-    original_status = invoice.status
-
-    show_service_date = any(
-        item.service_period_from
-        for item in items
-    )
+    # ==========================
+    # PDF HTML
+    # ==========================
 
     html_string = render_to_string(
         "invoices/invoices/pdf_cancel.html",
@@ -1376,23 +1410,31 @@ def invoices_cancel(request, invoice_id):
             "company": company,
             "cancel_date": timezone.now(),
             "cancel_number": invoice.cancel_number,
-            "original_status": original_status,
-            "total_net": total_net,
-            "tax_summary": dict(tax_summary),
-            "total_tax": total_tax,
-            "total_gross": total_gross,
+            "paid_amount": paid_amount,
+            "refund_amount": refund_amount,
+            "total_net": invoice.total_net,
+            "total_tax": invoice.total_tax,
+            "total_gross": invoice.total_amount,
             "show_service_date": show_service_date,
+            "tax_summary": dict(tax_summary),
         },
     )
+
+
+    # ==========================
+    # PDF erstellen
+    # ==========================
 
     pdf_file = HTML(
         string=html_string,
         base_url=request.build_absolute_uri("/"),
     ).write_pdf()
 
+
     filename = (
         f"Stornorechnung-{invoice.cancel_number}.pdf"
     )
+
 
     invoice.pdf_canceled_file.save(
         filename,
@@ -1400,17 +1442,21 @@ def invoices_cancel(request, invoice_id):
         save=False,
     )
 
+
     invoice.pdf_canceled_generated_at = timezone.now()
-    invoice.status = "canceled"
+
+    invoice.status = Invoice.Status.CANCELED
+
 
     invoice.save(
         update_fields=[
             "pdf_canceled_file",
             "pdf_canceled_generated_at",
             "status",
-            'cancel_number',
+            "cancel_number",
         ]
     )
+
 
     return FileResponse(
         io.BytesIO(pdf_file),
@@ -1438,64 +1484,179 @@ def invoices_delete(request, invoice_id):
     return redirect("invoices:invoices_invoices_overview",)
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+def create_invoice_income(invoice):
+    from finance.models import Income
+
+    if Income.objects.filter(
+        invoice=invoice
+    ).exists():
+        return
+
+    last_payment = invoice.payments.order_by(
+        "-date"
+    ).first()
+
+    if not last_payment:
+        return
+
+    Income.objects.create(
+        invoice=invoice,
+        amount=invoice.paid_invoice_amount,
+        date=last_payment.date,
+        name=f"Zahlung Rechnung {invoice.invoice_number}",
+        project=invoice.project,
+        payment_method=last_payment.payment_method,
+        created_by=last_payment.created_by,
+    )
+
+def allocate_invoice_payment(payment):
+    remaining = payment.amount
+    invoice = payment.invoice
+    reminders = invoice.reminders.filter(
+        status__in=[
+            Reminder.Status.SENT,
+            Reminder.Status.EXPIRED,
+        ]
+    ).order_by("level")
+
+    for reminder in reminders:
+        already_paid = reminder.payment_allocations.aggregate(
+            total=Sum("amount")
+        )["total"] or Decimal("0.00")
+        open_fee = reminder.fee - already_paid
+        if open_fee <= 0:
+            continue
+        allocation_amount = min(
+            remaining,
+            open_fee
+        )
+        if allocation_amount > 0:
+            InvoicePaymentAllocation.objects.create(
+                payment=payment,
+                reminder=reminder,
+                amount=allocation_amount
+            )
+            remaining -= allocation_amount
+        if remaining <= 0:
+            break
+    if remaining > 0:
+        InvoicePaymentAllocation.objects.create(
+            payment=payment,
+            reminder=None,
+            amount=remaining
+        )
+
+def update_invoice_payment_status(invoice):
+    # Mahnungen prüfen
+    reminders = invoice.reminders.filter(
+        status__in=[
+            Reminder.Status.SENT,
+            Reminder.Status.EXPIRED,
+        ]
+    )
+    for reminder in reminders:
+        if reminder.paid_amount >= reminder.fee:
+            reminder.status = Reminder.Status.PAID
+            reminder.save(
+                update_fields=[
+                    "status"
+                ]
+            )
+    if invoice.paid_invoice_amount >= invoice.total_amount:
+        if invoice.status != Invoice.Status.PAID:
+            invoice.status = Invoice.Status.PAID
+            invoice.save(
+                update_fields=[
+                    "status"
+                ]
+            )
+
+            if invoice.project:
+                create_invoice_income(invoice)
+
+
 @login_required
 @permission_required("invoices_invoices_invoices_paid")
 def invoices_paid(request, invoice_id):
-
     invoice = get_object_or_404(
         Invoice,
         id=invoice_id,
     )
 
-    if invoice.status != "sent":
+    if invoice.status not in [
+        Invoice.Status.SENT,
+        Invoice.Status.OVERDUE,
+    ]:
         return redirect(
             "invoices:invoices_detail",
             invoice_id=invoice.id,
         )
 
-    invoice.status = "paid"
-
-    invoice.save(
-        update_fields=[
-            "status",
-        ]
+    if request.method == "POST":
+        form = InvoicePaymentForm(request.POST)
+        if form.is_valid():
+            payment = form.save(commit=False)
+            payment.invoice = invoice
+            payment.created_by = request.user
+            payment.save()
+            allocate_invoice_payment(payment)
+            update_invoice_payment_status(invoice)
+            return redirect(
+                "invoices:invoices_detail",
+                invoice_id=invoice.id,
+            )
+        else:
+            print(form.errors)
+    else:
+        form = InvoicePaymentForm()
+    return render(
+        request,
+        "invoices/invoices/add_payment.html",
+        {
+            "form": form,
+            "invoice": invoice,
+        }
     )
 
-    return redirect(
-        "invoices:invoices_detail",
-        invoice_id=invoice.id,
-    )
 
 
-@login_required
-@permission_required("invoices_invoices_invoices_overdue")
-def invoices_overdue(request, invoice_id):
 
-    invoice = get_object_or_404(
-        Invoice,
-        id=invoice_id,
-    )
 
-    today = timezone.now().date()
 
-    if invoice.status != "sent":
-        return redirect(
-            "invoices:invoices_detail",
-            invoice_id=invoice.id,
-        )
 
-    if invoice.due_date and invoice.due_date < today:
-        invoice.status = "overdue"
-        invoice.save(
-            update_fields=[
-                "status",
-            ]
-        )
 
-    return redirect(
-        "invoices:invoices_detail",
-        invoice_id=invoice.id,
-    )
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1561,8 +1722,12 @@ def invoices_overdue(request, invoice_id):
 @login_required
 @permission_required("invoices_offers_view")
 def invoices_offers_overview(request):
+    status = request.GET.get("status")
 
     offers = Offer.objects.select_related("customer",).all()
+
+    if status:
+        offers = offers.filter(status=status)
     table = OfferTable(offers)
 
     RequestConfig(
@@ -2059,33 +2224,6 @@ def offers_reject(request, offer_id):
     )
 
 
-@login_required
-@permission_required("invoices_offers_offers_status")
-def offers_expire(request, offer_id):
-
-    offer = get_object_or_404(
-        Offer,
-        id=offer_id,
-    )
-
-    if offer.status != "sent":
-        return redirect(
-            "invoices:offers_detail",
-            offer_id=offer.id,
-        )
-
-    offer.status = "expired"
-
-    offer.save(
-        update_fields=[
-            "status",
-        ]
-    )
-
-    return redirect(
-        "invoices:offers_detail",
-        offer_id=offer.id,
-    )
 
 
 
@@ -2163,9 +2301,10 @@ def offers_expire(request, offer_id):
 @login_required
 @permission_required("invoices_reminders_view")
 def invoices_reminders_overview(request):
-
+    status = request.GET.get("status")
     reminders = Reminder.objects.select_related("invoice").all()
-
+    if status:
+        reminders = reminders.filter(status=status)
     table = ReminderTable(reminders)
 
     RequestConfig(
@@ -2330,6 +2469,12 @@ def reminders_download(request, reminder_id):
 
     invoice = reminder.invoice
 
+    payments = invoice.payments.order_by("date", "created_at")
+
+    total_paid = sum(
+        payment.amount
+        for payment in payments
+    )
 
     # ==========================
     # Rechnungsbetrag berechnen
@@ -2382,6 +2527,7 @@ def reminders_download(request, reminder_id):
         + reminder.fee
     )
 
+    open_amount = total_due - total_paid
     total_fees = (total_previous_fees + reminder.fee)
 
     company = CompanySetting.objects.first()
@@ -2429,11 +2575,13 @@ def reminders_download(request, reminder_id):
             "invoice_amount": invoice_amount,
             "previous_reminders": previous_reminders,
             "total_previous_fees": total_previous_fees,
+            "total_fees": total_fees,
+            "payments": payments,
+            "total_paid": total_paid,
             "total_due": total_due,
-            "total_fees": total_due,
+            "open_amount": open_amount,
         }
     )
-
     # ==========================
     # PDF erstellen
     # ==========================
@@ -2475,50 +2623,49 @@ def reminders_download(request, reminder_id):
 
 
 
-@login_required
-@permission_required("invoices_reminders_reminders_paid")
-def reminders_paid(request, reminder_id):
-    reminder = get_object_or_404(
-        Reminder,
-        id=reminder_id,
-    )
 
-    if reminder.status != "sent":
-        return redirect(
-            "invoices:reminders_detail",
-            reminder_id=reminder.id,
-        )
 
-    reminder.status = "paid"
-    reminder.save(update_fields=["status",])
 
-    reminder.invoice.status = "paid"
-    reminder.invoice.save(update_fields=["status",])
 
-    return redirect(
-        "invoices:reminders_detail",
-        reminder_id=reminder.id,
-    )
+
+
+
+
 
 
 @login_required
-@permission_required("invoices_reminders_reminders_expire")
-def reminders_expire(request, reminder_id):
-    reminder = get_object_or_404(
-        Reminder,
-        id=reminder_id,
+@permission_required("invoices_payments_view")
+def invoices_payments_overview(request):
+
+    payments = InvoicePayment.objects.select_related(
+        "invoice",
+        "invoice__customer",
+        "payment_method",
+        "created_by",
+    ).order_by(
+        "-date"
     )
 
-    if reminder.status != "sent":
-        return redirect(
-            "invoices:reminders_detail",
-            reminder_id=reminder.id,
-        )
 
-    reminder.status = "expired"
-    reminder.save(update_fields=["status",])
+    table = InvoicePaymentTable(
+        payments
+    )
 
-    return redirect(
-        "invoices:reminders_detail",
-        reminder_id=reminder.id,
+
+    RequestConfig(
+        request,
+        paginate={
+            "per_page": 25
+        }
+    ).configure(
+        table
+    )
+
+
+    return render(
+        request,
+        "invoices/payments/overview.html",
+        {
+            "table": table,
+        }
     )

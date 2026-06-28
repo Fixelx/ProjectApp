@@ -22,6 +22,7 @@ INSTALLED_APPS = [
     'time_tracking',
     'tailwind',
     'theme',
+    'django_apscheduler',
     "django_tables2",
     "django_filters",
     'django.contrib.admin',
@@ -83,6 +84,9 @@ USE_I18N = True
 USE_TZ = True
 
 STATIC_URL = 'static/'
+STATICFILES_DIRS = [
+    BASE_DIR / "static",
+]
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 TAILWIND_APP_NAME = 'theme'

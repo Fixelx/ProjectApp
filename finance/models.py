@@ -2,6 +2,9 @@ from django.db import models
 from django.contrib.auth import get_user_model
 from projects.models import Project
 import os
+from django.core.validators import MinValueValidator
+
+
 
 User = get_user_model()
 
@@ -42,7 +45,7 @@ class Expense(models.Model):
     supplier = models.ForeignKey(Supplier, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Lieferant")
     created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, verbose_name="Erstellt von")
     payment_method = models.ForeignKey(PaymentMethod, on_delete=models.SET_NULL, null=True, verbose_name="Zahlungsmethode")
-    amount = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Betrag (€)")
+    amount = models.DecimalField(max_digits=10,decimal_places=2,verbose_name="Betrag (€)",validators=[MinValueValidator(0,message="Der Betrag darf nicht negativ sein.")])
     date = models.DateTimeField(verbose_name="Datum")
     receipt = models.FileField(upload_to=receipt_upload_path, null=True, blank=True, verbose_name="Beleg")
     note = models.TextField(blank=True, verbose_name="Notiz")
@@ -54,8 +57,16 @@ class Expense(models.Model):
 class Income(models.Model):
     name = models.CharField(max_length=255, verbose_name="Name", null=True)
     project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name="incomes", verbose_name="Projekt")
+    invoice = models.OneToOneField(
+        "invoices.Invoice",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="income"
+    )
+
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, verbose_name="Kategorie")
-    amount = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Betrag (€)")
+    amount = models.DecimalField(max_digits=10,decimal_places=2,verbose_name="Betrag (€)",validators=[MinValueValidator(0,message="Der Betrag darf nicht negativ sein.")])
     date = models.DateTimeField(verbose_name="Datum")
     created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, verbose_name="Erstellt von")
     payment_method = models.ForeignKey(PaymentMethod, on_delete=models.SET_NULL, null=True, verbose_name="Zahlungsmethode")

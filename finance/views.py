@@ -11,6 +11,8 @@ from django.http import HttpResponse
 from calendar import monthrange
 from .forms import IncomeForm, ExpenseForm
 from .tables import PeriodAnalyticsTable, FinanceTransactionTable
+import json
+from inventory.models import ShoppingItem
 
 # =========================================================
 # OVERVIEW
@@ -102,23 +104,35 @@ def finance_overview(request, project_id):
     }
 
     period_data = []
-
+    period_keys = set()
     for i in income_stats:
-        period_start = i["period_key"]
-        income_total = i["total"] or 0
-        expense_total = expense_map.get(str(period_start), 0)
+        period_keys.add(i["period_key"])
+    for e in expense_stats:
+        period_keys.add(e["period_key"])
 
+    income_map = {
+        str(i["period_key"]): i["total"] or 0
+        for i in income_stats
+    }
+    expense_map = {
+        str(e["period_key"]): e["total"] or 0
+        for e in expense_stats
+    }
+
+    for period_start in sorted(period_keys, reverse=True):
+        income_total = income_map.get(str(period_start), 0)
+        expense_total = expense_map.get(str(period_start), 0)
         if period == "year":
             period_end = period_start.replace(month=12, day=31)
-
         elif period == "week":
             period_end = period_start + timedelta(days=6)
-
         elif period == "day":
             period_end = period_start
-
         else:
-            last_day = monthrange(period_start.year, period_start.month)[1]
+            last_day = monthrange(
+                period_start.year,
+                period_start.month
+            )[1]
             period_end = period_start.replace(day=last_day)
 
         period_data.append({
@@ -319,10 +333,30 @@ def add_expense(request, project_id):
             expense.project = project
             expense.created_by = request.user
             expense.save()
-            return redirect("finance:overview", project_id=project.id)
+
+            shopping_ids = request.session.pop(
+                "shopping_item_ids",
+                []
+            )
+
+            if shopping_ids:
+                ShoppingItem.objects.filter(
+                    id__in=shopping_ids,
+                    project=project
+                ).delete()
+
+            return redirect(
+                "finance:overview",
+                project_id=project.id
+            )
 
     else:
-        form = ExpenseForm()
+        initial = request.session.pop(
+            "expense_initial",
+            {}
+        )
+
+        form = ExpenseForm(initial=initial)
 
     return render(request, "finance/form.html", {
         "form": form,

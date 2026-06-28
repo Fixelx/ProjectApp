@@ -15,7 +15,7 @@ Details
     <div class="p-6 rounded-xl shadow bg-white dark:bg-slate-800 text-slate-900 dark:text-white transition-colors">
         <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
             <div>
-                <h2 class="text-xl font-bold">Aktionen</h2>
+                <h2 class="text-lg font-bold">Aktionen</h2>
                 <p class="text-slate-400 text-sm mt-1">
                     Mahnung verwalten
                 </p>
@@ -28,8 +28,6 @@ Details
                 {% if reminder.status == "sent" %}
                     <a href="{% url 'invoices:reminders_download' reminder.id %}" class="btn btn-action">Download</a>
                     <a href="{% url 'invoices:reminders_cancel' reminder.id %}" class="btn btn-delete">Stornieren</a>
-                    <a href="{% url 'invoices:reminders_paid' reminder.id %}" class="btn btn-action">Zahlung verbuchen</a>
-                    <a href="{% url 'invoices:reminders_expire' reminder.id %}" class="btn btn-action">Überfällig</a>
                 {% endif %}
                 {% if reminder.status == "paid" or reminder.status == "canceled" or reminder.status == "expired" %}
                     <a href="{% url 'invoices:reminders_download' reminder.id %}" class="btn btn-action">Download</a>

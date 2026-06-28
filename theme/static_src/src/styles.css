@@ -75,4 +75,17 @@
         @apply text-white;
         background-color: #cc4d49;
     }
+
+    select {
+            @apply text-black dark:text-white dark:bg-slate-800;
+    }
+
+    .hide-scrollbar {
+        scrollbar-width: none; /* Firefox */
+        -ms-overflow-style: none; /* IE/Edge */
+    }
+
+    .hide-scrollbar::-webkit-scrollbar {
+        display: none; /* Chrome/Safari */
+    }
 }

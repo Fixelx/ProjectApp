@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth import get_user_model
-
+from django.core.exceptions import ValidationError
 User = get_user_model()
 
 
@@ -70,6 +70,16 @@ class TimeEntry(models.Model):
 
     def __str__(self):
         return f"{self.user} - {self.start:%d.%m.%Y} - {self.duration_hours} Stunden"
+
+    def clean(self):
+        if self.start and self.end and self.start >= self.end:
+            raise ValidationError({
+                'end': 'Das Ende muss nach dem Start liegen.'
+            })
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super().save(*args, **kwargs)
 
     @property
     def duration_minutes(self):

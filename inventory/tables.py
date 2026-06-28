@@ -32,7 +32,6 @@ class InventoryGlobalTable(tables.Table):
         model = InventoryItem
         template_name = "django_tables2/table_toggle.html"
         fields = (
-            "expand",
             "name",
             "category",
             "available",
@@ -85,6 +84,11 @@ class InventoryAddTable(tables.Table):
         }
 
 class ShoppingItemTable(tables.Table):
+    selection = tables.TemplateColumn(
+        template_name="inventory/tables/shopping/selection.html",
+        orderable=False,
+        verbose_name="",
+    )
 
     name = tables.TemplateColumn(
         template_name="inventory/tables/shopping/name.html",
@@ -125,6 +129,7 @@ class ShoppingItemTable(tables.Table):
     class Meta:
         model = ShoppingItem
         fields = (
+            "selection",
             "name",
             "category",
             "quantity",
@@ -136,6 +141,8 @@ class ShoppingItemTable(tables.Table):
         attrs = {
             "class": "w-full text-sm"
         }
+
+        
 
 class ProjectInventoryItemTable(tables.Table):
 

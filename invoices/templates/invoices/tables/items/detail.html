@@ -1,0 +1,176 @@
+<form method="post" action="{% url 'invoices:items_edit' item.id %}">
+    {% csrf_token %}
+
+    <div class="grid md:grid-cols-2 xl:grid-cols-3 gap-4">
+
+        <div>
+            <label class="block text-sm mb-1">
+                Typ
+            </label>
+
+            <select
+                name="item_type"
+                class="border rounded px-3 py-2 w-full">
+
+                {% for value,label in item.ItemType.choices %}
+                    <option
+                        value="{{ value }}"
+                        {% if item.item_type == value %}selected{% endif %}>
+                        {{ label }}
+                    </option>
+                {% endfor %}
+
+            </select>
+        </div>
+
+        <div>
+            <label class="block text-sm mb-1">
+                Beschreibung
+            </label>
+
+            <input
+                type="text"
+                name="description"
+                value="{{ item.description }}"
+                class="border rounded px-3 py-2 w-full">
+        </div>
+        <div>
+            <label class="block text-sm mb-1">
+                Kategorie
+            </label>
+
+            <select
+                name="category"
+                class="border rounded px-3 py-2 w-full">
+
+                <option value="">
+                    ---
+                </option>
+
+                {% for c in table.categories %}
+                    <option
+                        value="{{ c.id }}"
+                        {% if item.category_id == c.id %}selected{% endif %}>
+                        {{ c.name }}
+                    </option>
+                {% endfor %}
+
+            </select>
+        </div>
+
+<div>
+            <label class="block text-sm mb-1">
+                Beschreibung
+            </label>
+
+            <input
+                type="text"
+                name="description"
+                value="{{ item.description }}"
+                class="border rounded px-3 py-2 w-full">
+        </div>
+        <div>
+            <label class="block text-sm mb-1">
+                Einheit
+            </label>
+
+            <select
+                name="unit"
+                class="border rounded px-3 py-2 w-full">
+
+                <option value="">
+                    ---
+                </option>
+
+                {% for u in table.units %}
+                    <option
+                        value="{{ u.id }}"
+                        {% if item.unit_id == u.id %}selected{% endif %}>
+                        {{ u.name }}
+                    </option>
+                {% endfor %}
+
+            </select>
+        </div>
+
+        <div>
+            <label class="block text-sm mb-1">
+                Einzelpreis Netto
+            </label>
+
+            <input
+                type="number"
+                step="0.01"
+                name="price_net"
+                value="{{ item.price_net }}"
+                class="border rounded px-3 py-2 w-full">
+        </div>
+
+        <div>
+            <label class="block text-sm mb-1">
+                MwSt. (%)
+            </label>
+
+            <input
+                type="number"
+                step="0.01"
+                name="tax_rate"
+                value="{{ item.tax_rate }}"
+                class="border rounded px-3 py-2 w-full">
+        </div>
+
+        <div>
+            <label class="block text-sm mb-1">
+                Einkaufspreis
+            </label>
+
+            <input
+                type="number"
+                step="0.01"
+                name="price_buy"
+                value="{{ item.price_buy }}"
+                class="border rounded px-3 py-2 w-full">
+        </div>
+        <div>
+            <label class="block text-sm mb-1">
+                Lieferant
+            </label>
+
+            <select
+                name="supplier"
+                class="border rounded px-3 py-2 w-full">
+
+                <option value="">
+                    ---
+                </option>
+
+                {% for s in table.suppliers %}
+                    <option
+                        value="{{ s.id }}"
+                        {% if item.supplier_id == s.id %}selected{% endif %}>
+                        {{ s.name }}
+                    </option>
+                {% endfor %}
+
+            </select>
+        </div>
+    </div>
+        
+    <div class="mt-5 flex gap-2">
+
+        <button
+            type="submit"
+            class="btn btn-save">
+            Speichern
+        </button>
+
+        <button
+            type="submit"
+            formaction="{% url 'invoices:items_delete' item.id %}"
+            class="btn btn-delete">
+            Löschen
+        </button>
+
+    </div>
+
+</form>

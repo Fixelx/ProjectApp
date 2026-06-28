@@ -16,7 +16,7 @@ Details & Positionen
     <div class="p-6 rounded-xl shadow bg-white dark:bg-slate-800 text-slate-900 dark:text-white transition-colors">
         <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
             <div>
-                <h2 class="text-xl font-bold">Aktionen</h2>
+                <h2 class="text-lg font-bold">Aktionen</h2>
                 <p class="text-slate-400 text-sm mt-1">
                     Positionen zum Angebot hinzufügen
                 </p>
@@ -32,7 +32,6 @@ Details & Positionen
                     <a href="{% url 'invoices:offers_download' offer.id %}" class="btn btn-action">Download</a>
                     <a href="{% url 'invoices:offers_accept' offer.id %}" class="btn btn-action">Akzeptiert</a>
                     <a href="{% url 'invoices:offers_reject' offer.id %}" class="btn btn-action">Abgelehnt</a>
-                    <a href="{% url 'invoices:offers_expire' offer.id %}" class="btn btn-action">Ausgelaufen</a>
                 {% endif %}
                 {% if offer.status == "accepted" or offer.status == "rejected" or offer.status == "expired" %}
                     <a href="{% url 'invoices:offers_download' offer.id %}" class="btn btn-action">Download</a>

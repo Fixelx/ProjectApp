@@ -1,11 +1,40 @@
 from django import forms
 from core.forms.base import BaseForm
-from .models import Customer, Item, Invoice, InvoiceItem, CustomerContact, CustomerLocation, Offer, OfferItem, Reminder
+from .models import Customer, Item, Invoice, InvoiceItem, CustomerContact, CustomerLocation, Offer, OfferItem, Reminder, InvoicePayment
 from projects.models import Project
 from time_tracking.models import TimeEntry
 from finance.models import Expense
 from django.utils import timezone
 from django.db.models import Q, Max
+
+
+
+class InvoicePaymentForm(BaseForm):
+    class Meta:
+        model = InvoicePayment
+        fields = [
+            "amount",
+            "date",
+            "payment_method",
+            "note",
+        ]
+
+        widgets = {
+            "date": forms.DateInput(
+                attrs={
+                    "type": "date"
+                }
+            ),
+        }
+
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["date"].initial = timezone.now().date()
+        self.apply_style()
+
+
+
 
 class CustomerForm(BaseForm):
     class Meta:
@@ -32,9 +61,12 @@ class ItemForm(BaseForm):
         fields = [
             "item_type",
             "description",
+            "category",
             "unit",
             "price_net",
             "tax_rate",
+            "price_buy",
+            "supplier",
         ]
 
     def __init__(self, *args, **kwargs):

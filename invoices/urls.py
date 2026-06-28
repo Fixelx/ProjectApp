@@ -1,5 +1,5 @@
 from django.urls import path
-from . import views
+from . import views, views_info
 
 app_name = "invoices"
 
@@ -37,7 +37,6 @@ urlpatterns = [
     path("invoices/<int:invoice_id>/download/", views.invoices_download, name="invoices_download"),
     path("invoices/<int:invoice_id>/cancel/", views.invoices_cancel, name="invoices_cancel"),
     path("invoices/<int:invoice_id>/paid/", views.invoices_paid, name="invoices_paid"),
-    path("invoices/<int:invoice_id>/overdue/", views.invoices_overdue, name="invoices_overdue"),
     path("invoices/<int:invoice_id>/delete/", views.invoices_delete, name="invoices_delete"),
 
 
@@ -54,7 +53,6 @@ urlpatterns = [
     path("offers/<int:offer_id>/download/", views.offers_download, name="offers_download"),
     path("offers/<int:offer_id>/accept/", views.offers_accept, name="offers_accept"),
     path("offers/<int:offer_id>/reject/", views.offers_reject, name="offers_reject"),
-    path("offers/<int:offer_id>/expire/", views.offers_expire, name="offers_expire"),
     path("offers/<int:offer_id>/delete/", views.offers_delete, name="offers_delete"),
 
     # Mahnungen
@@ -64,9 +62,9 @@ urlpatterns = [
     path("reminders/<int:reminder_id>/download/", views.reminders_download, name="reminders_download"),
     path("reminders/<int:reminder_id>/cancel/", views.reminders_cancel, name="reminders_cancel"),
     path("reminders/<int:reminder_id>/delete/", views.reminders_delete, name="reminders_delete"),
-    path("reminders/<int:reminder_id>/expire/", views.reminders_expire, name="reminders_expire"),
-    path("reminders/<int:reminder_id>/paid/", views.reminders_paid, name="reminders_paid"),
 
+    # Zahlungen
+    path("payments/", views.invoices_payments_overview, name="invoices_payments_overview"),
 
     # AJAX
     path("ajax/customer/<int:customer_id>/contacts/", views.ajax_contacts, name="ajax_contacts"),
@@ -74,4 +72,10 @@ urlpatterns = [
     path("ajax/project/<int:project_id>/invoice-data/", views.ajax_invoicedata, name="ajax_invoicedata"),
     path("ajax/invoice/<int:invoice_id>/sources/", views.ajax_invoiceitemsources, name="ajax_invoice_item_sources"),
     path("ajax/invoice-item-data/", views.ajax_invoice_item_data, name="ajax_invoice_item_data"),
+
+    path("ajax/invoice-info/", views_info.ajax_invoice_info, name="ajax_invoice_info"),
+    path("ajax/offer-info/",   views_info.ajax_offer_info,   name="ajax_offer_info"),
+    path("ajax/reminder-info/",views_info.ajax_reminder_info,name="ajax_reminder_info"),
+    path("ajax/customer-info/",views_info.ajax_customer_info, name="ajax_customer_info"),
+    path("ajax/kpi-info/", views_info.ajax_kpi_info, name="ajax_kpi_info"),
 ]

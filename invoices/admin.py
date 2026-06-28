@@ -7,7 +7,9 @@ from .models import (
     Invoice, 
     InvoiceItem,
     Unit,
-    Reminder
+    Reminder,
+    InvoicePayment,
+    InvoicePaymentAllocation,
 )
 
 @admin.register(Unit)
@@ -273,3 +275,67 @@ class ReminderAdmin(admin.ModelAdmin):
     )
 
     ordering = ("-created_at",)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+@admin.register(InvoicePayment)
+class InvoicePaymentAdmin(admin.ModelAdmin):
+
+    list_display = (
+        "invoice",
+        "amount",
+        "date",
+        "payment_method",
+        "created_by",
+        "created_at",
+    )
+
+    list_filter = (
+        "payment_method",
+        "date",
+        "created_at",
+    )
+
+    search_fields = (
+        "invoice__invoice_number",
+        "invoice__customer__company_name",
+        "note",
+    )
+
+    readonly_fields = (
+        "created_at",
+        "created_by",
+    )
+
+
+
+
+
+
+
+
+
+
+@admin.register(InvoicePaymentAllocation)
+class InvoicePaymentAllocationAdmin(admin.ModelAdmin):
+
+    list_display = (
+        "payment",
+        "amount",
+        "reminder",
+    )

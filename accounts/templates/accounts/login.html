@@ -1,60 +1,60 @@
 {% extends "base.html" %}
 
-{% block title %}
-Login
-{% endblock %}
+{% block title %}Login{% endblock %}
 
-{% block header_title %}
-<div class="flex justify-center">
-    {% if company_settings.logo %}
-        <img src="{{ company_settings.logo.url }}" alt="" class="h-32">
-        
-    {% elif company_settings.companyname %}
-        {{ company_settings.companyname }}
-    {% else %}
-        Projektverwaltung
-    {% endif %}
-</div>
-{% endblock %}
-
-{% block header_description %}
-{% endblock %}
+{% block header %}{% endblock %}
 
 {% block content %}
+<div class="fixed inset-0 flex justify-center items-center">
+    <div class="p-8 rounded-2xl shadow-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white transition-colors w-full max-w-md">
 
-<div class="flex justify-center items-center min-h-[80vh]">
+        <!-- Logo / Firmenname -->
+        <div class="flex justify-center mb-6">
+            {% if company_settings.logo %}
+                <img src="{{ company_settings.logo.url }}" alt="" class="h-30 object-contain">
+            {% elif company_settings.companyname %}
+                <span class="text-2xl font-bold tracking-tight">{{ company_settings.companyname }}</span>
+            {% else %}
+                <span class="text-2xl font-bold tracking-tight">Projektverwaltung</span>
+            {% endif %}
+        </div>
 
-    <div class="p-6 rounded-xl shadow bg-white dark:bg-slate-800 text-slate-900 dark:text-white transition-colors w-full max-w-md">
+        <!-- Trennlinie mit Company Color -->
+        <div class="h-0.5 rounded-full mb-6" style="background: var(--company-color, #6366f1);"></div>
 
-        <h1 class="text-3xl font-bold text-center mb-6">
-            Anmelden
-        </h1>
+        <h1 class="text-xl font-semibold text-center mb-6">Anmelden</h1>
 
         <form method="post" class="space-y-4">
             {% csrf_token %}
 
             {% for field in form %}
-                <div class="space-y-1">
-                    <label class="block text-sm font-medium text-slate-700 dark:text-slate-300">
-                        {{ field.label }}
-                    </label>
-                    <input
-                        type="{{ field.field.widget.input_type }}"
-                        name="{{ field.html_name }}"
-                        id="{{ field.id_for_label }}"
-                        {% if field.value %}value="{{ field.value }}"{% endif %}
-                        class="w-full px-4 py-3 rounded-lg border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-                        placeholder="{{ field.label }}"
-                    >
-                    {% if field.errors %}
-                    <p class="text-sm text-red-500">{{ field.errors|join:", " }}</p>
-                    {% endif %}
-                </div>
+            <div class="space-y-1">
+                <label for="{{ field.id_for_label }}"
+                       class="block text-sm font-medium text-slate-700 dark:text-slate-300">
+                    {{ field.label }}
+                </label>
+                <input
+                    type="{{ field.field.widget.input_type }}"
+                    name="{{ field.html_name }}"
+                    id="{{ field.id_for_label }}"
+                    {% if field.value %}value="{{ field.value }}"{% endif %}
+                    placeholder="{{ field.label }}"
+                    class="mt-1 w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600
+                           bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-white
+                           placeholder-slate-400 focus:outline-none focus:ring-2
+                           focus:border-transparent transition"
+                    style="--tw-ring-color: var(--company-color, #6366f1);"
+                >
+                {% if field.errors %}
+                <p class="text-sm text-red-500">{{ field.errors|join:", " }}</p>
+                {% endif %}
+            </div>
             {% endfor %}
 
             <button
                 type="submit"
-                class="btn w-full btn-action"
+                class="w-full py-3 rounded-lg font-semibold text-white transition hover:opacity-90 active:scale-95 mt-2"
+                style="background: var(--company-color, #6366f1);"
             >
                 Anmelden
             </button>
@@ -62,7 +62,6 @@ Login
         </form>
 
     </div>
-
 </div>
 
 {% endblock %}

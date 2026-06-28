@@ -9,6 +9,8 @@ from core.forms.base import BaseForm
 import subprocess
 from django.http import JsonResponse
 from django.conf import settings
+import sys
+from pathlib import Path
 
 def get_registry_entry(model_name):
     entry = next(
@@ -124,34 +126,58 @@ def setting_delete(request, model_name, pk):
 
 
 
+
+
 BASE_DIR = settings.BASE_DIR
 
 def _git(cmd):
     r = subprocess.run(cmd, capture_output=True, text=True, cwd=BASE_DIR)
     return r.stdout.strip(), r.returncode
 
+def _run(cmd):
+    r = subprocess.run(cmd, capture_output=True, text=True, cwd=BASE_DIR)
+    return r.stdout.strip(), r.returncode
+
+
 @login_required
 @permission_required("settings_update_check")
 def update_check(request):
     _git(["git", "fetch", "origin"])
-    local, _  = _git(["git", "rev-parse", "HEAD"])
-    remote, _ = _git(["git", "rev-parse", "origin/main"])
-    log, _    = _git(["git", "log", f"{local}..{remote}", "--oneline"])
+    local, _   = _git(["git", "rev-parse", "HEAD"])
+    remote, _  = _git(["git", "rev-parse", "origin/main"])
+    branch, _  = _git(["git", "rev-parse", "--abbrev-ref", "HEAD"])
+    log, _     = _git(["git", "log", f"{local}..{remote}", "--oneline"])
+    date, _    = _git(["git", "log", "-1", "--format=%cd", "--date=format:%d.%m.%Y %H:%M"])
+    author, _  = _git(["git", "log", "-1", "--format=%an"])
+    msg, _     = _git(["git", "log", "-1", "--format=%s"])
+
     return JsonResponse({
         "up_to_date": local == remote,
         "local":      local[:7],
         "remote":     remote[:7],
+        "branch":     branch,
         "changes":    log.splitlines() if log else [],
+        "last_commit_date":   date,
+        "last_commit_author": author,
+        "last_commit_msg":    msg,
     })
-
+    
 @login_required
 @permission_required("settings_update_apply")
 def update_apply(request):
     if request.method != "POST":
         return JsonResponse({"error": "POST required"}, status=405)
+
     _, code = _git(["git", "pull", "origin", "main"])
     if code != 0:
         return JsonResponse({"error": "git pull fehlgeschlagen"}, status=500)
-    _git(["pip", "install", "-r", f"{BASE_DIR}/requirements.txt", "-q"])
-    _git(["python", "manage.py", "migrate", "--no-input"])
+
+    _, pip_code = _run([sys.executable, "-m", "pip", "install", "-r", str(BASE_DIR / "requirements.txt"), "-q"])
+    if pip_code != 0:
+        return JsonResponse({"error": "pip install fehlgeschlagen"}, status=500)
+
+    _, migrate_code = _run([sys.executable, "manage.py", "migrate", "--no-input"])
+    if migrate_code != 0:
+        return JsonResponse({"error": "Migration fehlgeschlagen"}, status=500)
+
     return JsonResponse({"success": True})

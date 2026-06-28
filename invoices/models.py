@@ -1,6 +1,12 @@
 from django.db import models
 from django.core.exceptions import ValidationError
 from core.models import CompanySetting
+from django.db.models import Sum, F, DecimalField, ExpressionWrapper
+from django.contrib.auth import get_user_model
+from django.utils import timezone
+from decimal import Decimal
+from django.core.validators import MinValueValidator
+User = get_user_model()
 
 class Unit(models.Model):
     name = models.CharField(
@@ -92,15 +98,21 @@ class Item(models.Model):
 
     item_type = models.CharField(max_length=20, choices=ItemType.choices, default=ItemType.PRODUCT, verbose_name="Art")
     description = models.CharField(max_length=255, verbose_name="Beschreibung")
+    category = models.ForeignKey("finance.Category", on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Kategorie")
+    supplier = models.ForeignKey("finance.Supplier", on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Lieferant")
+    
     unit = models.ForeignKey(Unit,on_delete=models.PROTECT,related_name="item_items",verbose_name="Einheit")
   
-    price_net = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Preis Netto")
+    price_net = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Preis Netto",validators=[MinValueValidator(0,message="Der Betrag darf nicht negativ sein.")])
     tax_rate = models.DecimalField(
         max_digits=5,
         decimal_places=2,
         default=19.00,
-        verbose_name="MwSt. Satz (%)"
+        verbose_name="MwSt. Satz (%)",
+        validators=[MinValueValidator(0,message="Der Satz darf nicht negativ sein.")]
     )
+
+    price_buy = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Einkaufspreis", null=True, blank=True,validators=[MinValueValidator(0,message="Der Betrag darf nicht negativ sein.")])
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -142,6 +154,8 @@ class Invoice(models.Model):
     note = models.TextField(blank=True, verbose_name="Notiz")
     created_at = models.DateTimeField(auto_now_add=True)
 
+    is_small_business = models.BooleanField(default=False,verbose_name="Kleinunternehmer (§19 UStG)")
+
     pdf_file = models.FileField(upload_to="invoice_pdfs/",null=True,blank=True,verbose_name="PDF")
     pdf_generated_at = models.DateTimeField(null=True,blank=True,verbose_name="PDF erstellt am")
 
@@ -163,7 +177,7 @@ class Invoice(models.Model):
     class Meta:
         verbose_name = "Rechnung"
         verbose_name_plural = "Rechnungen"
-        ordering = ["-issue_date"]
+        ordering = ["-invoice_number"]
 
     def save(self, *args, **kwargs):
 
@@ -201,8 +215,105 @@ class Invoice(models.Model):
 
         super().save(*args, **kwargs)
 
+    def clean(self):
+        super().clean()
+
+        if self.issue_date and self.due_date:
+            if self.issue_date > self.due_date:
+                raise ValidationError(
+                    {
+                        "due_date": "Das Fälligkeitsdatum muss nach dem Rechnungsdatum liegen."
+                    }
+                )
+
     def __str__(self):
         return self.invoice_number
+
+    @property
+    def total_net(self):
+        result = self.items.aggregate(
+            total=Sum(
+                ExpressionWrapper(
+                    F("quantity") * F("unit_price_net"),
+                    output_field=DecimalField()
+                )
+            )
+        )
+        return result["total"] or Decimal("0.00")
+
+    @property
+    def total_tax(self):
+        total = Decimal("0.00")
+
+        for item in self.items.all():
+
+            item_net = item.calculated_total_net
+
+            total += (
+                item_net *
+                item.unit_tax_rate /
+                Decimal("100")
+            )
+
+        return total
+
+    @property
+    def total_amount(self):
+        if self.is_small_business:
+            return self.total_net
+        return self.total_net + self.total_tax
+
+    @property
+    def paid_amount(self):
+        return self.payments.aggregate(
+            total=Sum("amount")
+        )["total"] or Decimal("0.00")
+
+
+    @property
+    def paid_reminder_amount(self):
+        return self.reminders.aggregate(
+            total=Sum(
+                "payment_allocations__amount"
+            )
+        )["total"] or Decimal("0.00")
+
+
+    @property
+    def paid_invoice_amount(self):
+        return (
+            self.paid_amount
+            - self.paid_reminder_amount
+        )
+
+
+    @property
+    def reminder_amount(self):
+        return self.reminders.filter(
+            status__in=[
+                Reminder.Status.SENT,
+                Reminder.Status.EXPIRED,
+                Reminder.Status.PAID,
+            ]
+        ).aggregate(
+            total=Sum("fee")
+        )["total"] or Decimal("0.00")
+
+
+    @property
+    def total_with_reminders(self):
+        return (
+            self.total_amount
+            + self.reminder_amount
+        )
+
+
+    @property
+    def open_amount(self):
+        return (
+            self.total_with_reminders
+            - self.paid_amount
+        )
 
 
 class InvoiceItem(models.Model):
@@ -212,10 +323,10 @@ class InvoiceItem(models.Model):
     time_entry = models.ForeignKey("time_tracking.TimeEntry",on_delete=models.SET_NULL,null=True,blank=True,verbose_name="Zeiterfassung") # Quelle 2
     expense = models.ForeignKey("finance.Expense",on_delete=models.SET_NULL,null=True,blank=True,verbose_name="Ausgabe") # Quelle 3
     description = models.CharField(max_length=255,verbose_name="Beschreibung")
-    quantity = models.DecimalField(max_digits=10,decimal_places=2,default=1,verbose_name="Menge")
+    quantity = models.DecimalField(max_digits=10,decimal_places=2,default=1,verbose_name="Menge",validators=[MinValueValidator(0,message="Die Anzahl darf nicht negativ sein.")])
     unit = models.CharField(max_length=50,verbose_name="Einheit")
-    unit_price_net = models.DecimalField(max_digits=10,decimal_places=2,verbose_name="Einzelpreis Netto")
-    unit_tax_rate = models.DecimalField(max_digits=5,decimal_places=2,default=19.00,verbose_name="MwSt. Satz (%)")
+    unit_price_net = models.DecimalField(max_digits=10,decimal_places=2,verbose_name="Einzelpreis Netto",validators=[MinValueValidator(0,message="Der Betrag darf nicht negativ sein.")])
+    unit_tax_rate = models.DecimalField(max_digits=5,decimal_places=2,default=19.00,verbose_name="MwSt. Satz (%)",validators=[MinValueValidator(0,message="Der Satz darf nicht negativ sein.")])
     service_period_from = models.DateField(null=True,blank=True,verbose_name="Leistungszeitraum von",)
     service_period_to = models.DateField(null=True,blank=True,verbose_name="Leistungszeitraum bis",)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -229,7 +340,6 @@ class InvoiceItem(models.Model):
         verbose_name_plural = "Rechnungspositionen"
 
     def clean(self):
-
         sources = [
             self.item,
             self.time_entry,
@@ -239,9 +349,13 @@ class InvoiceItem(models.Model):
         selected = sum(1 for s in sources if s)
 
         if selected != 1:
-            raise ValidationError(
-                "Genau eine Quelle muss ausgewählt werden."
-            )
+            raise ValidationError("Genau eine Quelle muss ausgewählt werden.")
+
+        if self.service_period_from and self.service_period_to:
+            if self.service_period_from >= self.service_period_to:
+                raise ValidationError({
+                    'service_period_to': 'Das Ende des Leistungszeitraums muss nach dem Beginn liegen.'
+                })
 
     def __str__(self):
         return self.description
@@ -272,7 +386,6 @@ class Reminder(models.Model):
         DRAFT = "draft", "Entwurf"
         SENT = "sent", "Versendet"
         PAID = "paid", "Bezahlt"
-        #PARTIALLY_PAID = "partial", "Teilweise bezahlt"
         CANCELED = "canceled", "Storniert"
         EXPIRED = "expired", "Frist abgelaufen"
 
@@ -288,7 +401,7 @@ class Reminder(models.Model):
     level = models.PositiveSmallIntegerField(default=1,verbose_name="Mahnstufe",help_text="1 = Erste Mahnung, 2 = Zweite Mahnung, 3 = Letzte Mahnung",)
     issue_date = models.DateField(verbose_name="Mahndatum",)
     due_date = models.DateField(null=True,blank=True,verbose_name="Neue Zahlungsfrist",)
-    fee = models.DecimalField(max_digits=10,decimal_places=2,default=0,verbose_name="Mahngebühr",)
+    fee = models.DecimalField(max_digits=10,decimal_places=2,default=0,verbose_name="Mahngebühr",validators=[MinValueValidator(0,message="Der Betrag darf nicht negativ sein.")])
     note = models.TextField(blank=True,verbose_name="Hinweis",)
     pdf_file = models.FileField(upload_to="reminder_pdfs/",null=True,blank=True,verbose_name="PDF",)
     pdf_generated_at = models.DateTimeField(null=True,blank=True,verbose_name="PDF erstellt am",)
@@ -302,6 +415,27 @@ class Reminder(models.Model):
     def __str__(self):
         return self.reminder_number
 
+    def clean(self):
+        super().clean()
+
+        if self.issue_date and self.due_date:
+            if self.issue_date > self.due_date:
+                raise ValidationError(
+                    {
+                        "due_date": "Das Fälligkeitsdatum muss nach dem Mahnungsdatum liegen."
+                    }
+                )
+
+    @property
+    def paid_amount(self):
+        return self.payment_allocations.aggregate(
+            total=Sum("amount")
+        )["total"] or Decimal("0.00")
+
+
+    @property
+    def is_paid(self):
+        return self.paid_amount >= self.fee
 
 
 
@@ -451,10 +585,9 @@ class Offer(models.Model):
     class Meta:
         verbose_name = "Angebot"
         verbose_name_plural = "Angebote"
-        ordering = ["-issue_date"]
+        ordering = ["-offer_number"]
 
     def save(self, *args, **kwargs):
-
         if self.pk:
 
             old = Offer.objects.get(pk=self.pk)
@@ -484,6 +617,17 @@ class Offer(models.Model):
                         )
 
         super().save(*args, **kwargs)
+
+    def clean(self):
+        super().clean()
+
+        if self.issue_date and self.due_date:
+            if self.issue_date > self.due_date:
+                raise ValidationError(
+                    {
+                        "due_date": "Das Gültigkeitsdatum muss nach dem Angebotsdatum liegen."
+                    }
+                )
 
     def __str__(self):
         return self.offer_number
@@ -515,6 +659,7 @@ class OfferItem(models.Model):
         decimal_places=2,
         default=1,
         verbose_name="Menge",
+        validators=[MinValueValidator(0,message="Die Anzahl darf nicht negativ sein.")]
     )
 
     unit = models.CharField(
@@ -526,6 +671,7 @@ class OfferItem(models.Model):
         max_digits=10,
         decimal_places=2,
         verbose_name="Einzelpreis Netto",
+        validators=[MinValueValidator(0,message="Der Betrag darf nicht negativ sein.")]
     )
 
     unit_tax_rate = models.DecimalField(
@@ -533,6 +679,7 @@ class OfferItem(models.Model):
         decimal_places=2,
         default=19.00,
         verbose_name="MwSt. Satz (%)",
+        validators=[MinValueValidator(0,message="Der Satz darf nicht negativ sein.")]
     )
 
     created_at = models.DateTimeField(
@@ -593,3 +740,103 @@ class DocumentNumberSettings(models.Model):
     class Meta:
         verbose_name = "Dokumentnummer"
         verbose_name_plural = "Dokumentnummern"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+class InvoicePayment(models.Model):
+    invoice = models.ForeignKey(
+        Invoice,
+        on_delete=models.CASCADE,
+        related_name="payments"
+    )
+
+    amount = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        verbose_name="Betrag (€)",
+        validators=[MinValueValidator(0,message="Der Betrag darf nicht negativ sein.")]
+    )
+
+    date = models.DateTimeField(verbose_name="Datum")
+
+    payment_method = models.ForeignKey(
+        "finance.PaymentMethod",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name="Zahlungsmethode",
+    )
+
+    note = models.TextField(blank=True, verbose_name="Notiz")
+
+    created_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True
+    )
+    def clean(self):
+        if self.date and self.invoice_id:
+            if self.date.date() < self.invoice.issue_date:
+                raise ValidationError({
+                    'date': 'Das Zahlungsdatum darf nicht vor dem Rechnungsdatum liegen.'
+                })
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super().save(*args, **kwargs)
+
+    @property
+    def allocated_amount(self):
+        return self.allocations.aggregate(
+            total=Sum("amount")
+        )["total"] or 0
+
+    @property
+    def remaining_amount(self):
+        return self.amount - self.allocated_amount
+
+
+class InvoicePaymentAllocation(models.Model):
+
+    payment = models.ForeignKey(
+        InvoicePayment,
+        on_delete=models.CASCADE,
+        related_name="allocations"
+    )
+
+    reminder = models.ForeignKey(
+        Reminder,
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE,
+        related_name="payment_allocations"
+    )
+
+    amount = models.DecimalField(
+        max_digits=10,
+        decimal_places=2
+    )

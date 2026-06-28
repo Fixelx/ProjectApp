@@ -155,10 +155,9 @@ table {
 
 
 .total-box {
-
     margin-top:30px;
     margin-left:auto;
-    width:250px;
+    width:300px;
 
 }
 
@@ -174,11 +173,10 @@ table {
 
 
 .total-final {
-
     border-top:1px solid #cbd5e1;
     margin-top:10px;
     padding-top:10px;
-    font-size:16px;
+    font-size:14px;
     font-weight:bold;
 
 }
@@ -414,12 +412,11 @@ Stornodatum: {{ cancel_date|date:"d.m.Y" }}
 
 
 
-
 <!-- POSITIONEN -->
 
 <div class="items-wrapper">
-<table class="items">
 
+<table class="items">
 
 <thead>
 
@@ -429,37 +426,46 @@ Stornodatum: {{ cancel_date|date:"d.m.Y" }}
 Nr.
 </th>
 
+
 <th>
 Beschreibung
 </th>
 
-                    {% if show_service_date %}
-                        <th class="left">Leistungsdatum</th>
-                    {% endif %}
 
-<th class="left">
+{% if show_service_date %}
+
+<th>
+Leistungsdatum
+</th>
+
+{% endif %}
+
+
+<th class="right">
 Menge
 </th>
 
-<th class="left">
+
+<th>
 Einheit
 </th>
 
-<th class="left">
-Preis
+
+<th class="right">
+Einzelpreis
 </th>
 
 
-{% if not company.is_small_business %}
+{% if not invoice.is_small_business %}
 
-<th class="left">
+<th class="right">
 Steuer
 </th>
 
 {% endif %}
 
 
-<th class="left">
+<th class="right">
 Gesamt
 </th>
 
@@ -467,7 +473,6 @@ Gesamt
 </tr>
 
 </thead>
-
 
 
 <tbody>
@@ -483,40 +488,52 @@ Gesamt
 </td>
 
 
+
 <td>
-{{ item.description }}
+Storno: {{ item.description }}
 </td>
 
 
-                    {% if show_service_date %}
-                        <td class="left">
-                            {% if item.service_period_from %}
-                                {{ item.service_period_from|date:"d.m.Y" }}
-                            {% endif %}
-                            {% if item.service_period_to %}
-                                - {{ item.service_period_to|date:"d.m.Y" }}
-                            {% endif %}
-                        </td>
-                    {% endif %}
 
-<td class="left">
+{% if show_service_date %}
+
+<td>
+
+{% if item.service_period_from %}
+{{ item.service_period_from|date:"d.m.Y" }}
+{% endif %}
+
+{% if item.service_period_to %}
+- {{ item.service_period_to|date:"d.m.Y" }}
+{% endif %}
+
+</td>
+
+{% endif %}
+
+
+
+<td class="right">
 {{ item.quantity }}
 </td>
 
 
-<td class="left">
+
+<td>
 {{ item.unit }}
 </td>
 
 
-<td class="left">
+
+<td class="right">
 -{{ item.unit_price_net|floatformat:2 }} €
 </td>
 
 
-{% if not company.is_small_business %}
 
-<td class="left">
+{% if not invoice.is_small_business %}
+
+<td class="right">
 {{ item.unit_tax_rate|floatformat:0 }} %
 </td>
 
@@ -524,7 +541,7 @@ Gesamt
 
 
 
-<td class="left">
+<td class="right">
 -{{ item.calculated_total_net|floatformat:2 }} €
 </td>
 
@@ -540,13 +557,27 @@ Gesamt
 
 
 </table>
+
 </div>
 
 
 
 
-<!-- SUMMEN -->
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- SUMMEN -->
 
 <div class="total-box">
 
@@ -565,7 +596,9 @@ Netto
 
 
 
-{% if not company.is_small_business %}
+
+{% if not invoice.is_small_business %}
+
 {% for tax_rate,tax_amount in tax_summary.items %}
 
 <div class="total-row">
@@ -574,14 +607,11 @@ Netto
 Umsatzsteuer {{ tax_rate|floatformat:0 }} %
 </span>
 
-
 <span>
 -{{ tax_amount|floatformat:2 }} €
 </span>
 
-
 </div>
-
 
 {% endfor %}
 
@@ -589,17 +619,15 @@ Umsatzsteuer {{ tax_rate|floatformat:0 }} %
 
 
 
-
 <div class="total-row total-final">
 
 <span>
-Gesamt
+Rechnungsbetrag
 </span>
-
 
 <span>
 
-{% if company.is_small_business %}
+{% if invoice.is_small_business %}
 -{{ total_net|floatformat:2 }}
 {% else %}
 -{{ total_gross|floatformat:2 }}
@@ -609,11 +637,40 @@ Gesamt
 
 </span>
 
+</div>
+
+
+
+<div class="total-row">
+
+<span>
+Bereits bezahlt
+</span>
+
+<span>
+-{{ paid_amount|floatformat:2 }} €
+</span>
+
+</div>
+
+
+
+<div class="total-row total-final">
+
+<span>
+Erstattungsbetrag
+</span>
+
+<span>
+{{ refund_amount|floatformat:2 }} €
+</span>
 
 </div>
 
 
 </div>
+
+
 
 <div class="note">
 
@@ -623,28 +680,37 @@ Gesamt
 
     <br>
 
-    Die Rechnung {{ invoice.invoice_number }}
-    wird durch diese Stornorechnung vollständig aufgehoben.
 
-    {% if original_status == "paid" %}
+    Die Rechnung
+    <strong>{{ invoice.invoice_number }}</strong>
+    vom {{ invoice.issue_date|date:"d.m.Y" }}
+    wird durch diese Stornorechnung aufgehoben.
 
-        <br><br>
 
-        Die ursprüngliche Rechnung wurde bereits bezahlt.
+    {% if paid_amount > 0 %}
 
-        Es entsteht ein Guthaben in Höhe von
+    <br><br>
 
-        {% if company.is_small_business %}
-            {{ total_net|floatformat:2 }}
-        {% else %}
-            {{ total_gross|floatformat:2 }}
-        {% endif %}
 
-        €.
+    Die ursprüngliche Rechnung wurde bereits bezahlt.
 
-        Die Rückerstattung erfolgt separat.
+
+    Der zu erstattende Betrag beträgt:
+
+
+    <strong>
+        {{ refund_amount|floatformat:2 }} €
+    </strong>
+
+
+    <br><br>
+
+
+    Die Rückerstattung erfolgt separat.
+
 
     {% endif %}
+
 
 </div>
 
@@ -652,8 +718,7 @@ Gesamt
 
 
 
-
-{% if company.is_small_business %}
+{% if invoice.is_small_business %}
 
 <div class="note">
 

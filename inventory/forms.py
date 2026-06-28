@@ -5,7 +5,6 @@ from core.forms.base import BaseForm
 
 
 class InventoryItemForm(BaseForm):
-
     class Meta:
         model = InventoryItem
         fields = [

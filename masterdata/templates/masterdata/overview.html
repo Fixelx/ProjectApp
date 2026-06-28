@@ -22,7 +22,7 @@ Einstellungen der App und Module bearbeiten
 <div class="p-6 rounded-xl shadow bg-white dark:bg-slate-800 text-slate-900 dark:text-white transition-colors mb-8">
 
     <div class="mb-6">
-        <h2 class="text-xl font-bold">
+        <h2 class="text-lg font-bold">
             {{ group }}
         </h2>
     </div>
@@ -34,9 +34,9 @@ Einstellungen der App und Module bearbeiten
 
         <a 
             href="{% url 'masterdata:detail' entry.model_name %}"
-            class="bg-slate-100 dark:bg-slate-700 rounded-xl p-6"
+            class="bg-slate-100 dark:bg-slate-700 rounded-xl p-6 border border-slate-100 dark:border-slate-700 hover:border-[var(--company-color)]/40 hover:shadow-sm transition-all duration-200"
         >   
-                <h2 class="text-xl font-bold">
+                <h2 class="text-lg font-bold">
             {{ entry.name }}
         </h2>
         <p class="text-sm mt-2">
@@ -56,4 +56,134 @@ Einstellungen der App und Module bearbeiten
 </div>
 
 {% endfor %}
+
+
+
+
+
+
+
+
+
+
+
+<!-- System / Developer Panel -->
+<div class="p-6 rounded-xl shadow bg-white dark:bg-slate-800 text-slate-900 dark:text-white transition-colors mb-8">
+
+    <div class="flex items-center justify-between flex-wrap gap-3 mb-6">
+        <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-lg bg-indigo-100 dark:bg-indigo-900 flex items-center justify-center text-indigo-600 dark:text-indigo-300">
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M8 9l3 3-3 3m5 0h3M3 12a9 9 0 1 0 18 0A9 9 0 0 0 3 12z"/></svg>
+            </div>
+            <div>
+                <h2 class="text-lg font-bold">System</h2>
+                <p class="text-xs text-slate-400 mt-1">ProjectApp · Entwicklerinfo</p>
+            </div>
+        </div>
+        <span id="status-badge" class="hidden items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-full"></span>
+    </div>
+
+    <!-- Meta-Grid -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-2 mb-3" id="meta-grid" style="display:none">
+        <div class="bg-slate-100 dark:bg-slate-700 rounded-lg px-3 py-2">
+            <p class="text-xs text-slate-400 mb-1">Branch</p>
+            <p class="text-sm font-mono font-medium" id="meta-branch">—</p>
+        </div>
+        <div class="bg-slate-100 dark:bg-slate-700 rounded-lg px-3 py-2">
+            <p class="text-xs text-slate-400 mb-1">Lokaler commit</p>
+            <p class="text-sm font-mono font-medium" id="meta-local">—</p>
+        </div>
+        <div class="bg-slate-100 dark:bg-slate-700 rounded-lg px-3 py-2">
+            <p class="text-xs text-slate-400 mb-1">Letzter commit</p>
+            <p class="text-sm font-medium" id="meta-date">—</p>
+        </div>
+        <div class="bg-slate-100 dark:bg-slate-700 rounded-lg px-3 py-2">
+            <p class="text-xs text-slate-400 mb-1">Autor</p>
+            <p class="text-sm font-medium" id="meta-author">—</p>
+        </div>
+    </div>
+
+    <!-- Letzte Commit-Message -->
+    <div class="bg-slate-100 dark:bg-slate-700 rounded-lg px-3 py-2 mb-4 hidden" id="meta-msg-box">
+        <p class="text-xs text-slate-400 mb-1">Letzte Änderung</p>
+        <p class="text-xs font-medium" id="meta-msg">—</p>
+    </div>
+
+    <div class="border-t border-slate-200 dark:border-slate-700 my-4"></div>
+
+    <!-- Aktionen -->
+    <div class="flex items-center gap-3 flex-wrap">
+        <button onclick="checkUpdate()" id="check-btn" class="btn btn-action flex items-center gap-2 text-sm">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 4v6h6M20 20v-6h-6M4.93 15a9 9 0 1 0 .67-6.27"/></svg>
+            Auf Updates prüfen
+        </button>
+        <span class="text-xs text-slate-400">Vergleicht mit origin/main</span>
+    </div>
+
+    <!-- Changelog -->
+    <div id="changelog-box" class="hidden mt-4 pl-3 border-l-2 border-indigo-400">
+        <p class="text-xs text-slate-400 uppercase tracking-wider mb-2">Neue commits</p>
+        <div id="changelog-items" class="space-y-1"></div>
+        <button onclick="applyUpdate()" id="apply-btn" class="hidden btn btn-add mt-3 text-sm">
+            Update installieren
+        </button>
+    </div>
+
+</div>
+
+<script>
+async function checkUpdate() {
+    const btn = document.getElementById('check-btn');
+    btn.disabled = true;
+    btn.innerHTML = '<svg class="animate-spin" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 4v6h6M20 20v-6h-6M4.93 15a9 9 0 1 0 .67-6.27"/></svg> Prüfe…';
+
+    const res  = await fetch("{% url 'masterdata:update_check' %}");
+    const data = await res.json();
+
+    // Meta-Grid befüllen
+    document.getElementById('meta-branch').textContent  = data.branch  || '—';
+    document.getElementById('meta-local').textContent   = data.local   || '—';
+    document.getElementById('meta-date').textContent    = data.last_commit_date   || '—';
+    document.getElementById('meta-author').textContent  = data.last_commit_author || '—';
+    document.getElementById('meta-msg').textContent     = data.last_commit_msg    || '—';
+    document.getElementById('meta-grid').style.display  = 'grid';
+    document.getElementById('meta-msg-box').classList.remove('hidden');
+
+    // Badge
+    const badge = document.getElementById('status-badge');
+    badge.classList.remove('hidden');
+    badge.classList.add('inline-flex');
+    if (data.up_to_date) {
+        badge.className = 'inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-full bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300';
+        badge.innerHTML = '<svg width="10" height="10" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414L8.414 15 3.293 9.879a1 1 0 011.414-1.414L8.414 12.172l6.879-6.879a1 1 0 011.414 0z"/></svg> Aktuell';
+        document.getElementById('changelog-box').classList.add('hidden');
+    } else {
+        badge.className = 'inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300';
+        badge.innerHTML = `<svg width="10" height="10" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a8 8 0 100 16A8 8 0 0010 2zm0 4a1 1 0 011 1v3a1 1 0 01-2 0V7a1 1 0 011-1zm0 7a1 1 0 100 2 1 1 0 000-2z"/></svg> Update verfügbar → ${data.remote}`;
+
+        const items = document.getElementById('changelog-items');
+        items.innerHTML = data.changes.map(c => {
+            const [hash, ...rest] = c.split(' ');
+            return `<p class="text-xs font-mono"><span class="text-indigo-400">${hash}</span> <span class="text-slate-400">${rest.join(' ')}</span></p>`;
+        }).join('');
+        document.getElementById('apply-btn').classList.remove('hidden');
+        document.getElementById('changelog-box').classList.remove('hidden');
+    }
+
+    btn.disabled = false;
+    btn.innerHTML = '<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 4v6h6M20 20v-6h-6M4.93 15a9 9 0 1 0 .67-6.27"/></svg> Erneut prüfen';
+}
+
+async function applyUpdate() {
+    if (!confirm('Update jetzt installieren?')) return;
+    const res  = await fetch("{% url 'masterdata:update_apply' %}", {
+        method: 'POST',
+        headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+    });
+    const data = await res.json();
+    if (data.success) { location.reload(); }
+    else { alert('Fehler: ' + data.error); }
+}
+</script>
+
 {% endblock %}

@@ -20,7 +20,7 @@ Einnahmen & Ausgaben
     <div class="p-6 rounded-xl shadow bg-white dark:bg-slate-800 text-slate-900 dark:text-white transition-colors">
         <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
             <div>
-                <h2 class="text-xl font-bold">Aktionen</h2>
+                <h2 class="text-lg font-bold">Aktionen</h2>
                 <p class="text-slate-400 text-sm mt-1">Einnahmen und Ausgaben tracken</p>
             </div>
 
@@ -40,7 +40,7 @@ Einnahmen & Ausgaben
     <div class="p-6 rounded-xl shadow bg-white dark:bg-slate-800 text-slate-900 dark:text-white transition-colors">
 
         <div class="mb-6">
-            <h2 class="text-xl font-bold">Filter</h2>
+            <h2 class="text-lg font-bold">Filter</h2>
             <p class="text-slate-400 text-sm mt-1">Zeitraum für aktuelle Auswertung</p>
         </div>
 
@@ -72,30 +72,80 @@ Einnahmen & Ausgaben
     <!-- ===================== -->
     <!-- KPI FLOATING CARDS -->
     <!-- ===================== -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
 
-        <div class="p-6 rounded-xl shadow bg-white dark:bg-slate-800 text-slate-900 dark:text-white transition-colors">
-            <p class="text-slate-400 text-sm mt-1">Einnahmen</p>
-            <p class="text-3xl font-bold text-green-600 mt-1">
-                {{ total_income }} €
-            </p>
-        </div>
+    <!-- Einnahmen -->
+    <div class="p-6 rounded-xl  border border-green-200 dark:border-green-900 bg-white dark:bg-slate-800 transition">
 
-        <div class="p-6 rounded-xl shadow bg-white dark:bg-slate-800 text-slate-900 dark:text-white transition-colors">
-            <p class="text-slate-400 text-sm mt-1">Ausgaben</p>
-            <p class="text-3xl font-bold text-red-600 mt-1">
-                {{ total_expense }} €
-            </p>
-        </div>
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm text-slate-500 dark:text-slate-400">
+                    Einnahmen
+                </p>
 
-        <div class="p-6 rounded-xl shadow bg-white dark:bg-slate-800 text-slate-900 dark:text-white transition-colors">
-            <p class="text-slate-400 text-sm mt-1">Gewinn</p>
-            <p class="text-3xl font-bold text-blue-600 mt-1">
-                {{ total_profit }} €
-            </p>
+                <p class="text-3xl font-bold text-green-600 mt-2">
+                    {{ total_income }} €
+                </p>
+            </div>
+
+            <div class="flex items-center justify-center w-12 h-12 rounded-xl bg-green-100 dark:bg-green-900/40">
+                <span class="text-2xl text-green-600">
+                    ↑
+                </span>
+            </div>
         </div>
 
     </div>
+
+
+    <!-- Ausgaben -->
+    <div class="p-6 rounded-xl  border border-red-200 dark:border-red-900 bg-white dark:bg-slate-800 transition">
+
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm text-slate-500 dark:text-slate-400">
+                    Ausgaben
+                </p>
+
+                <p class="text-3xl font-bold text-red-600 mt-2">
+                    {{ total_expense }} €
+                </p>
+            </div>
+
+            <div class="flex items-center justify-center w-12 h-12 rounded-xl bg-red-100 dark:bg-red-900/40">
+                <span class="text-2xl text-red-600">
+                    ↓
+                </span>
+            </div>
+        </div>
+
+    </div>
+
+
+    <!-- Gewinn -->
+    <div class="p-6 rounded-xl  border border-blue-200 dark:border-blue-900 bg-white dark:bg-slate-800 transition">
+
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm text-slate-500 dark:text-slate-400">
+                    Gewinn
+                </p>
+
+                <p class="text-3xl font-bold text-blue-600 mt-2">
+                    {{ total_profit }} €
+                </p>
+            </div>
+
+            <div class="flex items-center justify-center w-12 h-12 rounded-xl bg-blue-100 dark:bg-blue-900/40">
+                <span class="text-2xl text-blue-600">
+                    €
+                </span>
+            </div>
+        </div>
+
+    </div>
+
+</div>
 
 
     <!-- ===================== -->
@@ -106,21 +156,21 @@ Einnahmen & Ausgaben
         <!-- INCOME -->
         <div class="p-6 rounded-xl shadow bg-white dark:bg-slate-800 text-slate-900 dark:text-white transition-colors">
 
-            <div class="p-4">
+            <div class="pb-4">
                 <h3 class="font-semibold text-green-600">Einnahmen</h3>
             </div>
 
-            <div class="divide-y">
+            <div class="flex flex-col gap-2 max-h-80 overflow-y-auto hide-scrollbar">
 
                 {% for i in incomes %}
-                <div class="p-4 flex justify-between">
+                <div class="p-4 flex justify-between bg-slate-100 dark:bg-slate-700 rounded-xl">
                     <div>
                         <p class="font-medium text-green-600">+{{ i.amount }} € {{ i.name }}</p>
                         <p class="text-slate-400 text-sm mt-1">{{ i.date|date:"d.m.Y" }} · {{ i.category }}</p>
                     </div>
                 </div>
                 {% empty %}
-                <p class="p-4 text-slate-400">Keine Einnahmen</p>
+                <div class="bg-white dark:bg-slate-800 border border-slate-500 rounded-xl p-6 text-slate-500">Keine Einnahmen</div>
                 {% endfor %}
 
             </div>
@@ -131,21 +181,21 @@ Einnahmen & Ausgaben
         <!-- EXPENSE -->
         <div class="p-6 rounded-xl shadow bg-white dark:bg-slate-800 text-slate-900 dark:text-white transition-colors">
 
-            <div class="p-4">
+            <div class="pb-4">
                 <h3 class="font-semibold text-red-600">Ausgaben</h3>
             </div>
 
-            <div class="divide-y">
+            <div class="flex flex-col gap-2 max-h-80 overflow-y-auto hide-scrollbar">
 
                 {% for e in expenses %}
-                <div class="p-4 flex justify-between">
+                <div class="p-4 flex justify-between bg-slate-100 dark:bg-slate-700 rounded-xl">
                     <div>
                         <p class="font-medium text-red-600">-{{ e.amount }} € {{ e.name }}</p>
                         <p class="text-slate-400 text-sm mt-1">{{ e.date|date:"d.m.Y" }} · {{ e.category }}</p>
                     </div>
                 </div>
                 {% empty %}
-                <p class="p-4 text-slate-400">Keine Ausgaben</p>
+                <div class="bg-white dark:bg-slate-800 border border-slate-500 rounded-xl p-6 text-slate-500">Keine Ausgaben</div>
                 {% endfor %}
 
             </div>
@@ -160,7 +210,7 @@ Einnahmen & Ausgaben
 <div class="p-6 rounded-xl shadow bg-white dark:bg-slate-800 text-slate-900 dark:text-white transition-colors">
 
     <div class="mb-6">
-        <h2 class="text-xl font-bold">
+        <h2 class="text-lg font-bold">
             Zeitraum-Analyse
         </h2>
 

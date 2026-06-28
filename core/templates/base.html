@@ -18,6 +18,11 @@
     </script>
     {% tailwind_css %}
 
+    {% if company_settings.favicon %}
+    <link rel="icon" type="image/png" href="{{ company_settings.favicon.url }}">
+    {% else %}
+    <link rel="icon" type="image/png" href="{% static 'favicon.png' %}">
+    {% endif %}
 
     <style>
         :root {
@@ -34,14 +39,18 @@
          onclick="toggleSidebar()"></div>
 
     <!-- Sidebar -->
-    <aside id="sidebar" class="fixed top-0 z-40 w-72 h-screen bg-slate-800 text-white transform -translate-x-full lg:translate-x-0 transition-transform duration-300 flex flex-col border-r border-white/20">
+    <aside id="sidebar" class="fixed top-0 z-40 w-72 h-screen bg-slate-800 text-white transform -translate-x-full lg:translate-x-0 transition-transform duration-300 flex flex-col border-r border-white/10">
 
-        <div class="p-6 border-b border-white/20 " style="background-color: {{ company_settings.color }};">
-
-            <h2 class="text-xl font-bold">
-                {{ company_settings.companyname|default:"Projektverwaltung" }}
-            </h2>
-
+        <div class="px-5 py-5 border-b border-white/10">
+            <div class="flex items-center gap-3">
+                <div class="w-2 h-2 rounded-full flex-shrink-0" style="background:var(--company-color);"></div>
+                <div>
+                    <p class="text-sm font-semibold text-white leading-none">
+                        {{ company_settings.companyname|default:"Projektverwaltung" }}
+                    </p>
+                    <p class="text-xs mt-1" style="color:rgba(255,255,255,.3);">Projektverwaltung</p>
+                </div>
+            </div>
         </div>
 
         <nav class="flex-1 p-4 space-y-2">
@@ -60,7 +69,7 @@
                         onclick="toggleProjects()"
                         class="w-full flex items-center justify-between px-4 py-3 hover:bg-slate-700">
 
-                        <span>{{ current_project.name|default:"Projekt wählen" }}</span>
+                        <span>Projekte</span>
 
                         <svg id="projectArrow"
                             class="w-4 h-4 transition-transform"
@@ -83,6 +92,21 @@
                             {{ p.name }}
                         </a>
                         {% endfor %}
+
+                        {# Trennlinie #}
+                        <div class="mx-4 my-1 border-t border-slate-700/60"></div>
+
+                        <a href="{% url 'projects:add' %}"
+                        class="block px-8 py-3 hover:bg-slate-700 text-slate-400 hover:text-white transition-colors">
+                            Hinzufügen
+                        </a>
+
+                        {% if archived_count %}
+                        <a href="{% url 'projects:archived' %}"
+                        class="block px-8 py-3 hover:bg-slate-700 text-slate-400 hover:text-white transition-colors">
+                            Archiviert ({{ archived_count }})
+                        </a>
+                        {% endif %}
 
                     </div>
 
@@ -145,6 +169,11 @@
                             Posten
                         </a>
 
+                        <a href="{% url 'invoices:invoices_payments_overview' %}"
+                        class="block px-8 py-3 hover:bg-slate-700 transition">
+                            Zahlungen
+                        </a>
+
                     </div>
 
                 </div>
@@ -188,17 +217,17 @@
 
         </nav>
 
-        <div class="p-4 border-t border-white/20">
+        <div class="p-4 border-t border-white/10">
             {% if user.is_superuser %}
-            <div class="w-full rounded-xl flex items-center justify-between px-4 py-3 hover:bg-slate-700 mb-4 border-white/20 border">
+            <div class="w-full rounded-xl flex items-center justify-between px-4 py-3 hover:bg-slate-700 mb-4 border-white/10 border">
                 <a href="{% url 'admin:index' %}">Admin</a>
             </div>
             {% endif %}
             <div class="flex gap-2 w-full">
-                <button id="theme-toggle" class="rounded-xl px-4 py-3 hover:bg-slate-700 border-white/20 border">🌙</button>
+                <button id="theme-toggle" class="rounded-xl px-4 py-3 hover:bg-slate-700 border-white/10 border">🌙</button>
                 <form method="post" action="{% url 'accounts:logout' %}" class="w-full">
                     {% csrf_token %}
-                    <button class="w-full rounded-xl px-4 py-3 border-white/20 border" style="background-color: {{ company_settings.color }};">Abmelden</button>
+                    <button class="w-full rounded-xl px-4 py-3 border-white/10 border" style="background-color: {{ company_settings.color }};">Abmelden</button>
                 </form>
             </div>
         </div>
@@ -217,16 +246,16 @@
             <span class="ml-4 font-bold">{{ company_settings.companyname|default:"Projektverwaltung" }}</span>
         </header>
         <main class="flex-1 p-6 overflow-x-auto w-screen lg:w-auto">
-            <div class="p-6 rounded-xl shadow mb-8 bg-white dark:bg-slate-800 text-slate-900 dark:text-white transition-colors">
-                <h1 class="text-3xl font-bold">
-                    {% block header_title %}
-                    {% endblock %}
+            {% block header %}
+            <div class="border border-slate-100 dark:border-slate-700 p-6 rounded-xl shadow mb-8 bg-white dark:bg-slate-800 text-slate-900 dark:text-white transition-colors">
+                <h1 class="text-xl font-bold">
+                    {% block header_title %}{% endblock %}
                 </h1>
-                <p class="text-slate-400 mt-1">
-                    {% block header_description %}
-                    {% endblock %}
+                <p class="text-slate-400 mt-1 text-md">
+                    {% block header_description %}{% endblock %}
                 </p>
             </div>
+            {% endblock %}
             {% block content %}
             {% endblock %}
         </main>
