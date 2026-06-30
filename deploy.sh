@@ -38,6 +38,17 @@ export LANG=de_DE.UTF-8
 log "System-Pakete installieren..."
 apt update -q
 apt install -y git nginx curl -q
+apt install -y \
+  libgobject-2.0-0 \
+  libpango-1.0-0 \
+  libpangoft2-1.0-0 \
+  libpangocairo-1.0-0 \
+  libcairo2 \
+  libcairo-gobject2 \
+  libgdk-pixbuf-2.0-0 \
+  libffi-dev \
+  shared-mime-info \
+  fonts-liberation
 
 # ── Python Version erkennen und richtige Pakete installieren ──
 log "Python einrichten..."
