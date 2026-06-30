@@ -26,14 +26,6 @@ echo ""
 # ── Root check ───────────────────────────────────────────
 [ "$EUID" -ne 0 ] && error "Bitte als root ausführen (sudo ./deploy.sh)"
 
-# ── Locale fix ───────────────────────────────────────────
-log "Locale einrichten..."
-apt install -y locales -q
-locale-gen en_US.UTF-8
-update-locale LANG=en_US.UTF-8
-export LC_ALL=en_US.UTF-8
-export LANG=en_US.UTF-8
-
 # ── System-Pakete ────────────────────────────────────────
 log "System-Pakete installieren..."
 apt update -q
