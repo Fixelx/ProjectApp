@@ -26,10 +26,44 @@ echo ""
 # ── Root check ───────────────────────────────────────────
 [ "$EUID" -ne 0 ] && error "Bitte als root ausführen (sudo ./deploy.sh)"
 
+# ── Locale fix ───────────────────────────────────────────
+log "Locale einrichten..."
+apt install -y locales -q
+locale-gen en_US.UTF-8
+update-locale LANG=en_US.UTF-8
+export LC_ALL=en_US.UTF-8
+export LANG=en_US.UTF-8
+
 # ── System-Pakete ────────────────────────────────────────
 log "System-Pakete installieren..."
 apt update -q
-apt install -y python3.11 python3.11-venv python3.11-pip git nginx curl -q
+apt install -y git nginx curl -q
+
+# ── Python Version erkennen und richtige Pakete installieren ──
+log "Python einrichten..."
+PYTHON_BIN=""
+
+# Python 3.13 vorhanden?
+if python3 --version 2>/dev/null | grep -q "3.13"; then
+    log "Python 3.13 erkannt"
+    apt install -y python3.13-venv -q || true
+    # pip über get-pip.py installieren da python3-pip inkompatibel
+    curl -sS https://bootstrap.pypa.io/get-pip.py -o /tmp/get-pip.py
+    python3 /tmp/get-pip.py --break-system-packages -q
+    PYTHON_BIN="python3"
+# Python 3.11 vorhanden?
+elif python3.11 --version 2>/dev/null; then
+    log "Python 3.11 erkannt"
+    apt install -y python3.11 python3.11-venv python3-pip -q
+    PYTHON_BIN="python3.11"
+# Fallback: Python 3 installieren
+else
+    log "Python 3.11 installieren..."
+    apt install -y python3 python3-venv python3-pip -q
+    PYTHON_BIN="python3"
+fi
+
+log "Python-Binary: $PYTHON_BIN ($($PYTHON_BIN --version))"
 
 # ── Repo ─────────────────────────────────────────────────
 if [ -d "$APP_DIR/.git" ]; then
@@ -42,12 +76,14 @@ else
     cd $APP_DIR
 fi
 
+cd $APP_DIR
+
 # ── .env prüfen ──────────────────────────────────────────
 if [ ! -f "$APP_DIR/.env" ]; then
     warn ".env fehlt – wird aus .env.example erstellt..."
     cp $APP_DIR/.env.example $APP_DIR/.env
 
-    SECRET=$(python3 -c "import secrets; print(secrets.token_urlsafe(50))")
+    SECRET=$($PYTHON_BIN -c "import secrets; print(secrets.token_urlsafe(50))")
     sed -i "s/^SECRET_KEY=.*/SECRET_KEY=$SECRET/" $APP_DIR/.env
     sed -i "s/^ALLOWED_HOSTS=.*/ALLOWED_HOSTS=$DOMAIN,localhost/" $APP_DIR/.env
     sed -i "s/^CSRF_TRUSTED_ORIGINS=.*/CSRF_TRUSTED_ORIGINS=https:\/\/$DOMAIN/" $APP_DIR/.env
@@ -57,11 +93,12 @@ fi
 
 # ── Python venv ──────────────────────────────────────────
 log "Virtualenv einrichten..."
-python3 -m venv $APP_DIR/venv
+$PYTHON_BIN -m venv $APP_DIR/venv
 source $APP_DIR/venv/bin/activate
 
 # ── Abhängigkeiten ───────────────────────────────────────
 log "Python-Pakete installieren..."
+pip install --upgrade pip -q
 pip install -r $APP_DIR/requirements.txt -q
 pip install gunicorn -q
 
@@ -123,12 +160,10 @@ server {
 }
 EOF
 
-# Default-Site deaktivieren falls vorhanden
 [ -f /etc/nginx/sites-enabled/default ] && rm /etc/nginx/sites-enabled/default
 
 ln -sf /etc/nginx/sites-available/projectapp /etc/nginx/sites-enabled/
 nginx -t && systemctl restart nginx
-
 
 # ── Superuser ────────────────────────────────────────────
 warn "Superuser anlegen? [j/N]"
