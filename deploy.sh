@@ -26,6 +26,14 @@ echo ""
 # ── Root check ───────────────────────────────────────────
 [ "$EUID" -ne 0 ] && error "Bitte als root ausführen (sudo ./deploy.sh)"
 
+# ── Locale fix ───────────────────────────────────────────
+log "Locale einrichten..."
+apt install -y locales -q
+locale-gen en_US.UTF-8 de_DE.UTF-8
+update-locale LANG=de_DE.UTF-8 LC_ALL=de_DE.UTF-8
+export LC_ALL=de_DE.UTF-8
+export LANG=de_DE.UTF-8
+
 # ── System-Pakete ────────────────────────────────────────
 log "System-Pakete installieren..."
 apt update -q
@@ -38,10 +46,12 @@ PYTHON_BIN=""
 # Python 3.13 vorhanden?
 if python3 --version 2>/dev/null | grep -q "3.13"; then
     log "Python 3.13 erkannt"
-    apt install -y python3.13-venv -q || true
-    # pip über get-pip.py installieren da python3-pip inkompatibel
-    curl -sS https://bootstrap.pypa.io/get-pip.py -o /tmp/get-pip.py
-    python3 /tmp/get-pip.py --break-system-packages -q
+    apt install -y python3.13-venv python3-pip -q || true
+    # pip über get-pip.py nur wenn nicht vorhanden
+    if ! python3 -m pip --version &>/dev/null; then
+        curl -sS https://bootstrap.pypa.io/get-pip.py -o /tmp/get-pip.py
+        python3 /tmp/get-pip.py --break-system-packages -q
+    fi
     PYTHON_BIN="python3"
 # Python 3.11 vorhanden?
 elif python3.11 --version 2>/dev/null; then
