@@ -29,7 +29,7 @@ echo ""
 # ── System-Pakete ────────────────────────────────────────
 log "System-Pakete installieren..."
 apt update -q
-apt install -y python3 python3-pip python3-venv git nginx curl -q
+apt install -y python3.11 python3.11-venv python3.11-pip git nginx curl -q
 
 # ── Repo ─────────────────────────────────────────────────
 if [ -d "$APP_DIR/.git" ]; then
